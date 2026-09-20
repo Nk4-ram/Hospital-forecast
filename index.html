@@ -996,5 +996,86 @@
     document.getElementById('results-panel').style.display = 'block';
 }
     </script>
+    <script>
+        // --- EXISTING FORM LOGIC ---
+        const APPSCRIPT_URL = 'https://script.google.com/macros/s/AKfycbznnGjeOjJiFvVdB6oxN7d6r71eJ7uIkcrN6vuTU9NBHgyfzJGwc-JyFXIg4iQm9776xA/exec';
+
+        const form = document.getElementById('contactForm');
+        const statusDiv = document.getElementById('formStatus');
+
+        if (form) {
+            form.addEventListener('submit', function(e) {
+                e.preventDefault();
+
+                const name = document.getElementById('name').value.trim();
+                const email = document.getElementById('email').value.trim();
+                const phone = document.getElementById('phone').value.trim();
+
+                // Validate
+                if (!name || !email || !phone) {
+                    showError('All fields are required.');
+                    return;
+                }
+
+                if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+                    showError('Please enter a valid email address.');
+                    return;
+                }
+
+                // Build the URL with query parameters
+                const params = new URLSearchParams({ name, email, phone });
+                const urlWithParams = APPSCRIPT_URL + '?' + params.toString();
+
+                // CRITICAL: Use GET with no-cors
+                fetch(urlWithParams, { method: 'GET', mode: 'no-cors' })
+                    .then(() => showSuccess())
+                    .catch(() => showError('Network error. Please try again.'));
+            });
+        }
+
+        function showSuccess() {
+            statusDiv.textContent = '✓ Thank you! Your submission has been received.';
+            statusDiv.className = 'form-status success';
+            statusDiv.style.display = 'block';
+            form.reset();
+            setTimeout(() => {
+                statusDiv.style.display = 'none';
+            }, 5000);
+        }
+
+        function showError(message) {
+            statusDiv.textContent = '✗ ' + message;
+            statusDiv.className = 'form-status error';
+            statusDiv.style.display = 'block';
+        }
+
+        // --- NEW FORECAST CALCULATOR LOGIC ---
+        function calculateForecast() {
+            // 1. Get user inputs
+            const admissions = parseFloat(document.getElementById('admissions').value);
+            const alos = parseFloat(document.getElementById('alos').value); 
+            const targetOccupancy = parseFloat(document.getElementById('occupancy').value) / 100;
+            const daysInPeriod = 30; 
+
+            // Validation
+            if (isNaN(admissions) || isNaN(alos) || isNaN(targetOccupancy)) {
+                alert("Please enter valid numbers in all fields.");
+                return;
+            }
+            
+            // 2. Calculate
+            const averageDailyCensus = (admissions * alos) / daysInPeriod;
+            const totalBedsNeeded = averageDailyCensus / targetOccupancy;
+            const bufferBeds = totalBedsNeeded - averageDailyCensus;
+
+            // 3. Update the UI
+            document.getElementById('res-census').textContent = Math.round(averageDailyCensus);
+            document.getElementById('res-beds').textContent = Math.ceil(totalBedsNeeded); 
+            document.getElementById('res-buffer').textContent = Math.ceil(bufferBeds);
+
+            // Show the results panel
+            document.getElementById('results-panel').style.display = 'block';
+        }
+    </script>
 </body>
 </html>

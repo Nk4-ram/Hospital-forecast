@@ -604,12 +604,45 @@
                     </div>
                 </div>
             </div>
-            <div class="hero-right">
-                <!-- Placeholder for interactive dashboard -->
-                <div style="padding: 24px; background: #f2f3ff; min-height: 400px; display: flex; align-items: center; justify-content: center; color: #3f4850;">
-                    Interactive Forecast Dashboard Preview
-                </div>
+           <div class="hero-right">
+    <div class="forecast-calculator">
+        <h3>Capacity Forecast Engine</h3>
+        <p>Input historical data to generate a 30-day bed requirement forecast.</p>
+        
+        <div class="calc-grid">
+            <div class="calc-group">
+                <label>Expected Monthly Admissions</label>
+                <input type="number" id="admissions" value="1200" min="0">
             </div>
+            <div class="calc-group">
+                <label>Average Length of Stay (Days)</label>
+                <input type="number" id="alos" value="4.5" step="0.1" min="0">
+            </div>
+            <div class="calc-group">
+                <label>Target Occupancy Rate (%)</label>
+                <input type="number" id="occupancy" value="85" max="100" min="1">
+            </div>
+        </div>
+
+        <button onclick="calculateForecast()" class="btn btn-blue" style="width: 100%; justify-content: center; margin-top: 16px;">Run Forecast Model</button>
+
+        <div class="forecast-results" id="results-panel" style="display: none;">
+            <h4>30-Day Resource Forecast</h4>
+            <div class="result-row">
+                <span>Average Daily Census:</span>
+                <strong id="res-census">0</strong>
+            </div>
+            <div class="result-row">
+                <span>Operational Beds Needed:</span>
+                <strong id="res-beds" style="color: #006194; font-size: 24px;">0</strong>
+            </div>
+            <div class="result-row">
+                <span>Buffer Beds (for surges):</span>
+                <strong id="res-buffer">0</strong>
+            </div>
+        </div>
+    </div>
+</div>
         </div>
     </section>
 
@@ -869,6 +902,99 @@
             statusDiv.className = 'form-status error';
             statusDiv.style.display = 'block';
         }
+        .forecast-calculator {
+    padding: 32px;
+    background: #ffffff;
+    height: 100%;
+}
+.forecast-calculator h3 {
+    font-size: 22px;
+    margin-bottom: 8px;
+    color: #131b2e;
+}
+.forecast-calculator p {
+    font-size: 14px;
+    color: #3f4850;
+    margin-bottom: 24px;
+}
+.calc-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+.calc-group {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+.calc-group label {
+    font-size: 13px;
+    font-weight: bold;
+    color: #3f4850;
+}
+.calc-group input {
+    padding: 10px 12px;
+    border: 1px solid #d1d5db;
+    border-radius: 6px;
+    font-size: 16px;
+    font-family: inherit;
+}
+.forecast-results {
+    margin-top: 24px;
+    padding: 20px;
+    background: #f2f3ff;
+    border-radius: 8px;
+    border-left: 4px solid #006194;
+}
+.forecast-results h4 {
+    margin-bottom: 16px;
+    font-size: 16px;
+    color: #131b2e;
+}
+.result-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 12px;
+    font-size: 14px;
+}
+.result-row:last-child {
+    margin-bottom: 0;
+}
+        function calculateForecast() {
+    // 1. Get user inputs
+    const admissions = parseFloat(document.getElementById('admissions').value);
+    const alos = parseFloat(document.getElementById('alos').value); // Average Length of Stay
+    const targetOccupancy = parseFloat(document.getElementById('occupancy').value) / 100;
+    const daysInPeriod = 30; // Forecasting for a standard 30-day month
+
+    // Validation
+    if (isNaN(admissions) || isNaN(alos) || isNaN(targetOccupancy)) {
+        alert("Please enter valid numbers in all fields.");
+        return;
+    }
+
+    // 2. CORE FORMULA & LOGIC
+    
+    // Average Daily Census (ADC) = (Admissions * Average Length of Stay) / Days
+    // This is the average number of patients in the hospital per day
+    const averageDailyCensus = (admissions * alos) / daysInPeriod;
+    
+    // Total Beds Needed = ADC / Target Occupancy Rate
+    // Hospitals can't run at 100% capacity due to turnover, cleaning, and gender/isolation restrictions
+    const totalBedsNeeded = averageDailyCensus / targetOccupancy;
+    
+    // Surge Buffer = The difference between total operational beds and average daily census
+    const bufferBeds = totalBedsNeeded - averageDailyCensus;
+
+    // 3. Update the UI with the calculated data
+    document.getElementById('res-census').textContent = Math.round(averageDailyCensus);
+    document.getElementById('res-beds').textContent = Math.ceil(totalBedsNeeded); // Round up for beds
+    document.getElementById('res-buffer').textContent = Math.ceil(bufferBeds);
+
+    // Show the results panel
+    document.getElementById('results-panel').style.display = 'block';
+}
     </script>
 </body>
 </html>

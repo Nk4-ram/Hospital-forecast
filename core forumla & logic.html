@@ -1,0 +1,56 @@
+<div class="calculator-card" style="max-width: 600px; padding: 24px; background: #111827; color: #f3f4f6; border-radius: 12px; font-family: sans-serif;">
+  <h3>Capacity Gap Estimator</h3>
+  
+  <label>Surge Factor: <span id="surgeLabel">+15%</span></label>
+  <input type="range" id="surgeInput" min="0" max="50" value="15" style="width: 100%; margin: 8px 0 16px 0;" />
+
+  <label>Scheduled Nurses: <span id="nurseLabel">45</span></label>
+  <input type="range" id="nurseInput" min="20" max="80" value="45" style="width: 100%; margin: 8px 0 16px 0;" />
+
+  <div style="display: flex; gap: 12px; margin-top: 16px;">
+    <div style="flex: 1; background: #1f2937; padding: 12px; border-radius: 8px;">
+      <div style="font-size: 12px; color: #9ca3af;">Bed Gap</div>
+      <div id="bedGapOutput" style="font-size: 20px; font-weight: bold; color: #34d399;">+32 Beds</div>
+    </div>
+    <div style="flex: 1; background: #1f2937; padding: 12px; border-radius: 8px;">
+      <div style="font-size: 12px; color: #9ca3af;">Nurse Shortage</div>
+      <div id="nurseGapOutput" style="font-size: 20px; font-weight: bold; color: #fbbf24;">-7 Staff</div>
+    </div>
+  </div>
+</div>
+
+<script>
+  const totalBeds = 250;
+  const baseOccupancy = 190;
+  const nurseRatio = 4; // 1:4
+
+  const surgeInput = document.getElementById('surgeInput');
+  const nurseInput = document.getElementById('nurseInput');
+  const surgeLabel = document.getElementById('surgeLabel');
+  const nurseLabel = document.getElementById('nurseLabel');
+  const bedGapOutput = document.getElementById('bedGapOutput');
+  const nurseGapOutput = document.getElementById('nurseGapOutput');
+
+  function update() {
+    const surge = Number(surgeInput.value);
+    const nurses = Number(nurseInput.value);
+    
+    surgeLabel.textContent = `+${surge}%`;
+    nurseLabel.textContent = nurses;
+
+    const patients = Math.round(baseOccupancy * (1 + surge / 100));
+    const bedGap = totalBeds - patients;
+    const requiredNurses = Math.ceil(patients / nurseRatio);
+    const nurseGap = nurses - requiredNurses;
+
+    bedGapOutput.textContent = (bedGap >= 0 ? `+${bedGap}` : bedGap) + ' Beds';
+    bedGapOutput.style.color = bedGap < 0 ? '#f43f5e' : '#34d399';
+
+    nurseGapOutput.textContent = (nurseGap >= 0 ? `+${nurseGap}` : nurseGap) + ' Staff';
+    nurseGapOutput.style.color = nurseGap < 0 ? '#fbbf24' : '#34d399';
+  }
+
+  surgeInput.addEventListener('input', update);
+  nurseInput.addEventListener('input', update);
+  update();
+</script>

@@ -1972,28 +1972,11 @@
         });
         // --- RESOURCE GAP VISUALIZATION LOGIC ---
         
+        // --- RESOURCE GAP VISUALIZATION LOGIC ---
         const gapData = [
-            {
-                resource: "Total Facility Beds",
-                icon: "🛏️",
-                capacity: 250,
-                demand: 262,
-                unit: "beds"
-            },
-            {
-                resource: "Nursing Staff (Next 24h)",
-                icon: "👩‍⚕️",
-                capacity: 58,
-                demand: 64,
-                unit: "nurses"
-            },
-            {
-                resource: "Emergency Dept Beds",
-                icon: "🚑",
-                capacity: 65,
-                demand: 70,
-                unit: "beds"
-            }
+            { resource: "Total Facility Beds", icon: "🛏️", capacity: 250, demand: 262, unit: "beds" },
+            { resource: "Nursing Staff (Next 24h)", icon: "👩‍⚕️", capacity: 58, demand: 64, unit: "nurses" },
+            { resource: "Emergency Dept Beds", icon: "🚑", capacity: 65, demand: 70, unit: "beds" }
         ];
 
         function renderGaps() {
@@ -2002,8 +1985,6 @@
 
             gapData.forEach(item => {
                 const deficit = item.demand - item.capacity;
-                
-                // Calculate percentages to make the bars overlap correctly
                 const maxVal = Math.max(item.capacity, item.demand);
                 const capacityPct = (item.capacity / maxVal) * 100;
                 const demandPct = (item.demand / maxVal) * 100;
@@ -2016,9 +1997,7 @@
                         <div class="gap-deficit">Projected Shortfall: ${deficit} ${item.unit}</div>
                     </div>
                     <div class="gap-bar-container">
-                        <!-- Demand bar (Red, sits in the back and extends further if there is a deficit) -->
                         <div class="gap-bar-demand" style="width: ${demandPct}%;"></div>
-                        <!-- Capacity bar (Blue, sits in the front. Has a white border to visually separate from red) -->
                         <div class="gap-bar-capacity" style="width: ${capacityPct}%; border-right: ${deficit > 0 ? '4px solid white' : 'none'};"></div>
                     </div>
                     <div class="gap-labels">
@@ -2031,6 +2010,7 @@
         }
         
         document.addEventListener('DOMContentLoaded', renderGaps);
+        
     </script>
 </body>
 </html>

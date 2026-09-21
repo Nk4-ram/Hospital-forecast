@@ -676,6 +676,79 @@
             display: flex;
             gap: 8px;
         }
+        /* Department Grid Styles */
+        .dept-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 24px;
+            width: 100%;
+        }
+        .dept-card {
+            background: white;
+            border-radius: 12px;
+            padding: 24px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+            text-align: left;
+            border-top: 4px solid #006194;
+            transition: transform 0.2s ease;
+        }
+        .dept-card:hover {
+            transform: translateY(-2px);
+        }
+        .dept-card.status-warning {
+            border-top-color: #dd6b20;
+        }
+        .dept-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 16px;
+        }
+        .dept-title {
+            font-size: 16px;
+            font-weight: bold;
+            color: #131b2e;
+        }
+        .dept-status {
+            font-size: 11px;
+            font-weight: bold;
+            padding: 4px 10px;
+            border-radius: 9999px;
+            letter-spacing: 0.5px;
+        }
+        .status-optimal-badge { background: #d4edda; color: #155724; }
+        .status-warning-badge { background: #feebc8; color: #c05621; }
+
+        .dept-stat-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 8px;
+            font-size: 13px;
+            color: #3f4850;
+        }
+        .dept-stat-value {
+            font-weight: bold;
+            color: #131b2e;
+            font-size: 14px;
+        }
+        .progress-bar-bg {
+            background: #e2e8f0;
+            border-radius: 9999px;
+            height: 8px;
+            width: 100%;
+            margin-top: 8px;
+            margin-bottom: 20px;
+            overflow: hidden;
+        }
+        .progress-bar-fill {
+            height: 100%;
+            background: #006194;
+            border-radius: 9999px;
+            transition: width 1s ease-in-out;
+        }
+        .progress-bar-fill.warning {
+            background: #dd6b20;
+        }
     </style>
 </head>
 <body>
@@ -859,10 +932,13 @@
         </div>
     </section>
 
-    <section class="section section-alt">
-        <div class="section-content">
-            <h2 style="color: #131b2e; margin-bottom: 16px;">6. Department Forecast</h2>
-            <p>Department-specific capacity and demand analytics.</p>
+   <section class="section section-alt" id="department-section">
+        <div class="section-content" style="max-width: 1000px; margin: 0 auto; width: 100%;">
+            <h2 style="color: #131b2e; margin-bottom: 8px;">Department Capacity Forecast</h2>
+            <p style="margin-bottom: 32px; color: #3f4850;">Real-time bed occupancy and staffing requirements by department.</p>
+            
+            <!-- JavaScript will inject the department cards here -->
+            <div id="departments-container" class="dept-grid"></div>
         </div>
     </section>
 
@@ -1287,6 +1363,89 @@
         
         // 3. Run the function when the page loads
         document.addEventListener('DOMContentLoaded', renderAlerts);
+        // --- DEPARTMENT FORECAST LOGIC ---
+        
+        const departmentsData = [
+            {
+              "name": "Emergency Department (ED)",
+              "totalBeds": 65,
+              "occupiedBeds": 59,
+              "occupancyRate": 90.8,
+              "scheduledStaff": 20,
+              "status": "WARNING",
+              "trend": "+8.4%"
+            },
+            {
+              "name": "Intensive Care Unit (ICU)",
+              "totalBeds": 35,
+              "occupiedBeds": 30,
+              "occupancyRate": 85.7,
+              "scheduledStaff": 31,
+              "status": "OPTIMAL",
+              "trend": "+2.1%"
+            },
+            {
+              "name": "General Med-Surg Ward",
+              "totalBeds": 120,
+              "occupiedBeds": 105,
+              "occupancyRate": 87.5,
+              "scheduledStaff": 22,
+              "status": "OPTIMAL",
+              "trend": "+4.3%"
+            },
+            {
+              "name": "Pediatrics",
+              "totalBeds": 30,
+              "occupiedBeds": 24,
+              "occupancyRate": 80.0,
+              "scheduledStaff": 7,
+              "status": "OPTIMAL",
+              "trend": "-1.2%"
+            }
+        ];
+
+        function renderDepartments() {
+            const container = document.getElementById('departments-container');
+            if (!container) return;
+
+            departmentsData.forEach(dept => {
+                const isWarning = dept.status === 'WARNING';
+                const trendColor = dept.trend.startsWith('+') ? '#e53e3e' : '#38a169'; // Red for up, Green for down
+                
+                const card = document.createElement('div');
+                card.className = `dept-card ${isWarning ? 'status-warning' : ''}`;
+                
+                card.innerHTML = `
+                    <div class="dept-header">
+                        <div class="dept-title">${dept.name}</div>
+                        <div class="dept-status ${isWarning ? 'status-warning-badge' : 'status-optimal-badge'}">${dept.status}</div>
+                    </div>
+                    <div class="dept-stat-row">
+                        <span>Occupied Beds</span>
+                        <span class="dept-stat-value">${dept.occupiedBeds} / ${dept.totalBeds}</span>
+                    </div>
+                    <div class="progress-bar-bg">
+                        <div class="progress-bar-fill ${isWarning ? 'warning' : ''}" style="width: ${dept.occupancyRate}%"></div>
+                    </div>
+                    <div class="dept-stat-row">
+                        <span>Occupancy Rate</span>
+                        <span class="dept-stat-value">${dept.occupancyRate}%</span>
+                    </div>
+                    <div class="dept-stat-row">
+                        <span>Scheduled Nurses</span>
+                        <span class="dept-stat-value">${dept.scheduledStaff}</span>
+                    </div>
+                    <div class="dept-stat-row" style="margin-top: 12px; padding-top: 12px; border-top: 1px solid #f2f3ff;">
+                        <span>Demand Trend</span>
+                        <span class="dept-stat-value" style="color: ${trendColor}">${dept.trend}</span>
+                    </div>
+                `;
+                
+                container.appendChild(card);
+            });
+        }
+        
+        document.addEventListener('DOMContentLoaded', renderDepartments);
     </script>
 </body>
 </html>

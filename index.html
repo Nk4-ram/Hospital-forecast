@@ -1041,6 +1041,98 @@
             color: #131b2e;
             border-left: 3px solid #006194;
         }
+        /* Emergency Preparedness Styles */
+        .emergency-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 24px;
+            text-align: left;
+        }
+        .emergency-card {
+            background: white;
+            padding: 24px;
+            border-radius: 12px;
+            border: 1px solid #e2e8f0;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.02);
+            transition: transform 0.2s ease;
+            display: flex;
+            flex-direction: column;
+        }
+        .emergency-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 12px 20px rgba(0,0,0,0.05);
+        }
+        .emergency-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+        .emergency-icon {
+            font-size: 28px;
+            background: #f8fafc;
+            width: 48px;
+            height: 48px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 8px;
+        }
+        .emergency-title {
+            font-size: 16px;
+            font-weight: bold;
+            color: #131b2e;
+            line-height: 1.2;
+        }
+        .readiness-section {
+            margin-bottom: 20px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid #f1f5f9;
+        }
+        .readiness-label {
+            display: flex;
+            justify-content: space-between;
+            font-size: 13px;
+            color: #3f4850;
+            margin-bottom: 8px;
+        }
+        .readiness-bar-bg {
+            background: #e2e8f0;
+            height: 6px;
+            border-radius: 9999px;
+            width: 100%;
+            overflow: hidden;
+        }
+        .readiness-bar-fill {
+            height: 100%;
+            border-radius: 9999px;
+        }
+        .emergency-actions strong {
+            font-size: 12px;
+            text-transform: uppercase;
+            color: #64748b;
+            letter-spacing: 0.5px;
+            display: block;
+            margin-bottom: 12px;
+        }
+        .emergency-actions ul {
+            list-style: none;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        .emergency-actions li {
+            font-size: 13px;
+            color: #131b2e;
+            display: flex;
+            align-items: flex-start;
+            gap: 8px;
+            line-height: 1.4;
+        }
+        .emergency-actions .check {
+            color: #006194;
+            font-weight: bold;
+        }
     </style>
 </head>
 <body>
@@ -1391,11 +1483,101 @@
         </script>
     </section>
 
-    <section class="section">
-        <div class="section-content">
-            <h2 style="color: #131b2e; margin-bottom: 16px;">11. Emergency Preparedness</h2>
-            <p>Plan for surge capacity and emergency scenarios.</p>
+   <section class="section" id="emergency-section">
+        <div class="section-content" style="max-width: 1000px; margin: 0 auto; width: 100%;">
+            
+            <div style="text-align: center; margin-bottom: 48px;">
+                <div class="eyebrow" style="margin-bottom: 16px; background: #fee2e2; color: #991b1b;">
+                    <span class="eyebrow-dot" style="background: #ef4444; box-shadow: inset 0 0 0 3px rgba(239, 68, 68, 0.3);"></span>
+                    SURGE PROTOCOLS
+                </div>
+                <h2 style="color: #131b2e; font-size: 32px; margin-bottom: 16px; letter-spacing: -0.5px;">Emergency Preparedness Scenarios</h2>
+                <p style="color: #3f4850; max-width: 600px; margin: 0 auto; font-size: 16px;">Simulate crisis scenarios and instantly generate resource mobilization plans based on current capacity.</p>
+            </div>
+
+            <!-- The emergency cards will be injected here -->
+            <div id="emergency-container" class="emergency-grid"></div>
+
         </div>
+
+        <!-- Bundled Script specifically for this section -->
+        <script>
+            (function() {
+                const emergencyData = [
+                    {
+                        title: "Mass Casualty Incident (MCI)",
+                        icon: "🚑",
+                        readiness: 92,
+                        actions: [
+                            "Activate 15 triage overflow beds",
+                            "Alert on-call trauma surgical teams",
+                            "Divert non-critical inbound EMS"
+                        ]
+                    },
+                    {
+                        title: "Infectious Disease Surge",
+                        icon: "🦠",
+                        readiness: 78,
+                        actions: [
+                            "Convert Ward B to negative pressure",
+                            "Audit PPE stockpile (N95, gowns)",
+                            "Deploy isolation nursing ratios"
+                        ]
+                    },
+                    {
+                        title: "Severe Weather / Blackout",
+                        icon: "⚡",
+                        readiness: 85,
+                        actions: [
+                            "Verify backup generator fuel reserves",
+                            "Prepare early discharge for stable patients",
+                            "Lock down non-essential facility access"
+                        ]
+                    }
+                ];
+
+                const container = document.getElementById('emergency-container');
+                if (!container) return;
+
+                emergencyData.forEach(scenario => {
+                    // Turn the progress bar green if readiness is high, orange if it needs work
+                    const readinessColor = scenario.readiness >= 80 ? '#38a169' : '#dd6b20';
+                    
+                    const card = document.createElement('div');
+                    card.className = 'emergency-card';
+                    
+                    // Create the HTML for the list of actions
+                    let actionsHTML = '';
+                    scenario.actions.forEach(action => {
+                        actionsHTML += `<li><span class="check">✓</span> ${action}</li>`;
+                    });
+
+                    card.innerHTML = `
+                        <div class="emergency-header">
+                            <div class="emergency-icon">${scenario.icon}</div>
+                            <h3 class="emergency-title">${scenario.title}</h3>
+                        </div>
+                        <div class="readiness-section">
+                            <div class="readiness-label">
+                                <span>System Readiness</span>
+                                <span style="font-weight: bold; color: ${readinessColor};">${scenario.readiness}%</span>
+                            </div>
+                            <div class="readiness-bar-bg">
+                                <div class="readiness-bar-fill" style="width: ${scenario.readiness}%; background: ${readinessColor};"></div>
+                            </div>
+                        </div>
+                        <div class="emergency-actions">
+                            <strong>Automated Protocol Steps:</strong>
+                            <ul>
+                                ${actionsHTML}
+                            </ul>
+                        </div>
+                        <button class="btn-outline" style="width: 100%; margin-top: 24px; border: 1px solid #cbd5e1; padding: 10px;">Run Simulation</button>
+                    `;
+                    container.appendChild(card);
+                });
+            })();
+        </script>
     </section>
 
     <section class="section section-alt">

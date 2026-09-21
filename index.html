@@ -907,6 +907,83 @@
                 display: none; /* Hides the connecting lines on small screens */
             }
         }
+        /* Gap Analysis Styles */
+        .gap-grid {
+            display: flex;
+            flex-direction: column;
+            gap: 24px;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        .gap-card {
+            background: white;
+            padding: 24px;
+            border-radius: 12px;
+            border: 1px solid #e2e8f0;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.02);
+            text-align: left;
+            transition: transform 0.2s ease;
+        }
+        .gap-card:hover {
+            transform: translateX(4px);
+        }
+        .gap-header {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 16px;
+            align-items: center;
+        }
+        .gap-title {
+            font-size: 16px;
+            font-weight: bold;
+            color: #131b2e;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .gap-deficit {
+            font-size: 13px;
+            font-weight: bold;
+            color: #e53e3e;
+            background: #fff5f5;
+            padding: 6px 12px;
+            border-radius: 9999px;
+            border: 1px solid #fed7d7;
+        }
+        .gap-bar-container {
+            background: #f8fafc;
+            height: 16px;
+            border-radius: 9999px;
+            position: relative;
+            margin-bottom: 12px;
+            overflow: hidden;
+        }
+        .gap-bar-demand {
+            background: #e53e3e; /* Red bar showing the overflow */
+            height: 100%;
+            border-radius: 9999px;
+            position: absolute;
+            left: 0;
+            top: 0;
+            z-index: 0;
+            transition: width 1s ease-in-out;
+        }
+        .gap-bar-capacity {
+            background: #006194; /* Blue bar showing what you actually have */
+            height: 100%;
+            border-radius: 9999px;
+            position: absolute;
+            left: 0;
+            top: 0;
+            z-index: 1;
+            transition: width 1s ease-in-out;
+        }
+        .gap-labels {
+            display: flex;
+            justify-content: space-between;
+            font-size: 13px;
+            color: #3f4850;
+        }
     </style>
 </head>
 <body>
@@ -1182,10 +1259,17 @@
         </div>
     </section>
 
-    <section class="section">
-        <div class="section-content">
-            <h2 style="color: #131b2e; margin-bottom: 16px;">9. Resource Gap Visualization</h2>
-            <p>Identify and plan for resource shortfalls.</p>
+  <section class="section" id="gap-section">
+        <div class="section-content" style="max-width: 1000px; margin: 0 auto; width: 100%;">
+            
+            <div style="text-align: center; margin-bottom: 48px;">
+                <h2 style="color: #131b2e; font-size: 32px; margin-bottom: 16px; letter-spacing: -0.5px;">Resource Gap Analysis</h2>
+                <p style="color: #3f4850; max-width: 600px; margin: 0 auto; font-size: 16px;">Visually identify where projected peak demand exceeds your current available capacity.</p>
+            </div>
+
+            <!-- JavaScript will inject the gap bars here -->
+            <div id="gap-container" class="gap-grid"></div>
+
         </div>
     </section>
 
@@ -1886,6 +1970,67 @@
                 }
             });
         });
+        // --- RESOURCE GAP VISUALIZATION LOGIC ---
+        
+        const gapData = [
+            {
+                resource: "Total Facility Beds",
+                icon: "🛏️",
+                capacity: 250,
+                demand: 262,
+                unit: "beds"
+            },
+            {
+                resource: "Nursing Staff (Next 24h)",
+                icon: "👩‍⚕️",
+                capacity: 58,
+                demand: 64,
+                unit: "nurses"
+            },
+            {
+                resource: "Emergency Dept Beds",
+                icon: "🚑",
+                capacity: 65,
+                demand: 70,
+                unit: "beds"
+            }
+        ];
+
+        function renderGaps() {
+            const container = document.getElementById('gap-container');
+            if (!container) return;
+
+            gapData.forEach(item => {
+                const deficit = item.demand - item.capacity;
+                
+                // Calculate percentages to make the bars overlap correctly
+                const maxVal = Math.max(item.capacity, item.demand);
+                const capacityPct = (item.capacity / maxVal) * 100;
+                const demandPct = (item.demand / maxVal) * 100;
+                
+                const card = document.createElement('div');
+                card.className = 'gap-card';
+                card.innerHTML = `
+                    <div class="gap-header">
+                        <div class="gap-title"><span>${item.icon}</span> ${item.resource}</div>
+                        <div class="gap-deficit">Projected Shortfall: ${deficit} ${item.unit}</div>
+                    </div>
+                    <div class="gap-bar-container">
+                        <!-- Demand bar (Red, sits in the back and extends further if there is a deficit) -->
+                        <div class="gap-bar-demand" style="width: ${demandPct}%;"></div>
+                        <!-- Capacity bar (Blue, sits in the front. Has a white border to visually separate from red) -->
+                        <div class="gap-bar-capacity" style="width: ${capacityPct}%; border-right: ${deficit > 0 ? '4px solid white' : 'none'};"></div>
+                    </div>
+                    <div class="gap-labels">
+                        <span>Current Capacity: <strong>${item.capacity}</strong></span>
+                        <span>Projected Demand: <strong style="color: #e53e3e;">${item.demand}</strong></span>
+                    </div>
+                `;
+                container.appendChild(card);
+            });
+        }
+        
+        document.addEventListener('DOMContentLoaded', renderGaps);
     </script>
 </body>
 </html>

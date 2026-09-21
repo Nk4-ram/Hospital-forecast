@@ -20,6 +20,70 @@
 
         /* Header */
         header {
+            /* Alert Card Styles */
+        .alert-card {
+            background: white;
+            border-left: 6px solid #e53e3e; /* Red for Critical */
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 16px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            transition: transform 0.2s ease;
+        }
+        .alert-card:hover {
+            transform: translateY(-2px);
+        }
+        .alert-warning {
+            border-left-color: #dd6b20; /* Orange for Warning */
+        }
+        .alert-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .alert-title {
+            font-weight: bold;
+            font-size: 18px;
+            color: #131b2e;
+        }
+        .alert-badge {
+            padding: 4px 12px;
+            border-radius: 9999px;
+            font-size: 11px;
+            font-weight: bold;
+            color: white;
+            letter-spacing: 0.5px;
+        }
+        .badge-critical { background: #e53e3e; }
+        .badge-warning { background: #dd6b20; }
+        
+        .alert-meta {
+            font-size: 13px;
+            color: #3f4850;
+            display: flex;
+            gap: 16px;
+            opacity: 0.8;
+        }
+        .alert-message {
+            font-size: 15px;
+            color: #131b2e;
+            margin-top: 8px;
+            line-height: 1.5;
+        }
+        .alert-action {
+            background: #f2f3ff;
+            padding: 12px;
+            border-radius: 6px;
+            font-size: 14px;
+            font-weight: bold;
+            color: #006194;
+            margin-top: 8px;
+            display: flex;
+            gap: 8px;
+        }
             backdrop-filter: blur(12px);
             background: rgba(250, 248, 255, 0.85);
             box-shadow: 0px 1px 8px rgba(0, 0, 0, 0.04);
@@ -745,10 +809,13 @@
         </div>
     </section>
 
-    <section class="section section-alt">
-        <div class="section-content">
-            <h2 style="color: #131b2e; margin-bottom: 16px;">8. Peak-Demand Alert</h2>
-            <p>Proactive alerts for capacity surges.</p>
+   <section class="section section-alt" id="alerts-section">
+        <div class="section-content" style="max-width: 800px; text-align: left; margin: 0 auto;">
+            <h2 style="color: #131b2e; margin-bottom: 8px; text-align: center;">Active Capacity Alerts</h2>
+            <p style="text-align: center; margin-bottom: 32px; color: #3f4850;">Proactive warnings based on the 7-day hospital forecast.</p>
+            
+            <!-- JavaScript will inject the alerts into this container -->
+            <div id="alerts-container"></div>
         </div>
     </section>
 
@@ -1096,6 +1163,66 @@
             // Reveal the interactive calculator
             document.getElementById('calculator-view').style.display = 'block';
         }
+        // --- PEAK DEMAND ALERTS LOGIC ---
+        
+        // 1. Load the JSON Data
+        const activeAlertsData = [
+            {
+              "id": "ALT-2026-0926-01",
+              "severity": "CRITICAL",
+              "title": "Hospital-Wide Bed Shortage Projected",
+              "targetDate": "2026-09-26",
+              "department": "Facility Wide",
+              "message": "Projected census of 262 exceeds total licensed capacity (250 beds) by 12 beds.",
+              "recommendedAction": "Initiate surge flex units and reschedule non-urgent elective admissions for Friday and Saturday."
+            },
+            {
+              "id": "ALT-2026-0925-02",
+              "severity": "WARNING",
+              "title": "ED Boarding & Staff Bottleneck",
+              "targetDate": "2026-09-25",
+              "department": "Emergency",
+              "message": "ED intake expected to hit 70 patients against 65 bed capacity. Nursing shortage: 4 nurses.",
+              "recommendedAction": "Call in float pool nurses for Friday 19:00 - 07:00 shift."
+            }
+        ];
+
+        // 2. Function to build the UI cards
+        function renderAlerts() {
+            const container = document.getElementById('alerts-container');
+            if (!container) return;
+
+            activeAlertsData.forEach(alert => {
+                const isCritical = alert.severity === 'CRITICAL';
+                
+                // Create the card div
+                const card = document.createElement('div');
+                card.className = `alert-card ${isCritical ? '' : 'alert-warning'}`;
+                
+                // Inject the HTML inside the card
+                card.innerHTML = `
+                    <div class="alert-header">
+                        <div class="alert-title">${alert.title}</div>
+                        <div class="alert-badge ${isCritical ? 'badge-critical' : 'badge-warning'}">${alert.severity}</div>
+                    </div>
+                    <div class="alert-meta">
+                        <span>📅 Target Date: ${alert.targetDate}</span>
+                        <span>🏥 Dept: ${alert.department}</span>
+                    </div>
+                    <div class="alert-message">${alert.message}</div>
+                    <div class="alert-action">
+                        <span>💡</span>
+                        <span><strong>Action Required:</strong> ${alert.recommendedAction}</span>
+                    </div>
+                `;
+                
+                // Add the completed card to the page
+                container.appendChild(card);
+            });
+        }
+        
+        // 3. Run the function when the page loads
+        document.addEventListener('DOMContentLoaded', renderAlerts);
     </script>
 </body>
 </html>

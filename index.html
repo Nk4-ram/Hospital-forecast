@@ -794,6 +794,16 @@
             font-size: 12px;
             color: #3f4850;
         }
+        /* Chart Container Styles */
+        .chart-container {
+            background: white;
+            border-radius: 12px;
+            padding: 24px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+            width: 100%;
+            height: 450px; /* Sets the height of the graph */
+            position: relative;
+        }
     </style>
 </head>
 <body>
@@ -970,10 +980,14 @@
         </div>
     </section>
 
-    <section class="section">
-        <div class="section-content">
-            <h2 style="color: #131b2e; margin-bottom: 16px;">5. Forecast Analytics Dashboard</h2>
-            <p>Interactive visualization of admission predictions and resource planning.</p>
+   <section class="section" id="analytics-section">
+        <div class="section-content" style="max-width: 1000px; margin: 0 auto; width: 100%;">
+            <h2 style="color: #131b2e; margin-bottom: 8px;">Forecast Analytics Dashboard</h2>
+            <p style="margin-bottom: 32px; color: #3f4850;">14-Day historical and predicted hospital census vs. capacity.</p>
+            
+            <div class="chart-container">
+                <canvas id="forecastChart"></canvas>
+            </div>
         </div>
     </section>
 
@@ -1557,6 +1571,83 @@
         }
         
         document.addEventListener('DOMContentLoaded', renderResourcePlanning);
+        // --- FORECAST ANALYTICS CHART LOGIC ---
+        
+        // 14-day data extracted from the JSON
+        const hospitalTimeline = [
+            { date: "Sep 15", actual: 196, forecast: null, limit: 250 },
+            { date: "Sep 16", actual: 204, forecast: null, limit: 250 },
+            { date: "Sep 17", actual: 208, forecast: null, limit: 250 },
+            { date: "Sep 18", actual: 222, forecast: null, limit: 250 },
+            { date: "Sep 19", actual: 234, forecast: null, limit: 250 },
+            { date: "Sep 20", actual: 224, forecast: null, limit: 250 },
+            { date: "Sep 21", actual: 218, forecast: 218, limit: 250 }, // Today (connects the lines)
+            { date: "Sep 22", actual: null, forecast: 226, limit: 250 },
+            { date: "Sep 23", actual: null, forecast: 231, limit: 250 },
+            { date: "Sep 24", actual: null, forecast: 239, limit: 250 },
+            { date: "Sep 25", actual: null, forecast: 252, limit: 250 },
+            { date: "Sep 26", actual: null, forecast: 262, limit: 250 }, // Projected Peak (exceeds limit)
+            { date: "Sep 27", actual: null, forecast: 246, limit: 250 },
+            { date: "Sep 28", actual: null, forecast: 228, limit: 250 }
+        ];
+
+        function renderChart() {
+            const ctx = document.getElementById('forecastChart');
+            if (!ctx) return;
+
+            new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: hospitalTimeline.map(d => d.date),
+                    datasets: [
+                        {
+                            label: 'Historical Census',
+                            data: hospitalTimeline.map(d => d.actual),
+                            borderColor: '#006194',
+                            backgroundColor: '#006194',
+                            borderWidth: 3,
+                            tension: 0.3,
+                            spanGaps: true // Connects the lines if data is missing
+                        },
+                        {
+                            label: 'AI Forecast',
+                            data: hospitalTimeline.map(d => d.forecast),
+                            borderColor: '#dd6b20',
+                            backgroundColor: '#dd6b20',
+                            borderWidth: 3,
+                            borderDash: [6, 6], // Makes the line dashed
+                            tension: 0.3,
+                            spanGaps: true
+                        },
+                        {
+                            label: 'Capacity Limit (250)',
+                            data: hospitalTimeline.map(d => d.limit),
+                            borderColor: '#e53e3e',
+                            borderWidth: 2,
+                            pointRadius: 0 // Removes dots from the flat line
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { position: 'top' },
+                        tooltip: { mode: 'index', intersect: false }
+                    },
+                    scales: {
+                        y: {
+                            min: 150,
+                            max: 300,
+                            title: { display: true, text: 'Total Occupied Beds' }
+                        }
+                    }
+                }
+            });
+        }
+        
+        // Wait for the page to load, then draw the chart
+        document.addEventListener('DOMContentLoaded', renderChart);
     </script>
 </body>
 </html>

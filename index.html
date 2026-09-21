@@ -1133,6 +1133,48 @@
             color: #006194;
             font-weight: bold;
         }
+        /* Security Section Styles */
+        .security-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 24px;
+        }
+        .security-card {
+            background: white;
+            padding: 32px 24px;
+            border-radius: 12px;
+            text-align: center;
+            border: 1px solid #e2e8f0;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+        .security-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 12px 20px rgba(0,0,0,0.05);
+        }
+        .security-icon {
+            font-size: 32px;
+            background: #f2f3ff;
+            width: 72px;
+            height: 72px;
+            margin: 0 auto 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            color: #006194;
+        }
+        .security-title {
+            font-size: 16px;
+            color: #131b2e;
+            margin-bottom: 8px;
+            font-weight: bold;
+        }
+        .security-desc {
+            font-size: 13px;
+            color: #3f4850;
+            line-height: 1.5;
+        }
     </style>
 </head>
 <body>
@@ -1580,13 +1622,39 @@
         </script>
     </section>
 
-    <section class="section section-alt">
-        <div class="section-content">
-            <h2 style="color: #131b2e; margin-bottom: 16px;">12. Data & Security</h2>
-            <p>Enterprise-grade security and compliance standards.</p>
+   <section class="section section-alt" id="security-section">
+        <div class="section-content" style="max-width: 1000px; margin: 0 auto; width: 100%;">
+            
+            <div style="text-align: center; margin-bottom: 48px;">
+                <h2 style="color: #131b2e; font-size: 32px; margin-bottom: 16px; letter-spacing: -0.5px;">Enterprise-Grade Security</h2>
+                <p style="color: #3f4850; max-width: 600px; margin: 0 auto; font-size: 16px;">Built from the ground up to exceed healthcare compliance standards and protect sensitive patient data.</p>
+            </div>
+
+            <div class="security-grid">
+                <div class="security-card">
+                    <div class="security-icon">🛡️</div>
+                    <h3 class="security-title">HIPAA Compliant</h3>
+                    <p class="security-desc">Full compliance with the Health Insurance Portability and Accountability Act.</p>
+                </div>
+                <div class="security-card">
+                    <div class="security-icon">🔒</div>
+                    <h3 class="security-title">End-to-End Encryption</h3>
+                    <p class="security-desc">AES-256 encryption for all data at rest and TLS 1.3 for data in transit.</p>
+                </div>
+                <div class="security-card">
+                    <div class="security-icon">📜</div>
+                    <h3 class="security-title">SOC 2 Type II</h3>
+                    <p class="security-desc">Independently audited for security, availability, and processing integrity.</p>
+                </div>
+                <div class="security-card">
+                    <div class="security-icon">👥</div>
+                    <h3 class="security-title">Role-Based Access</h3>
+                    <p class="security-desc">Strict access controls, SSO integration, and comprehensive audit logging.</p>
+                </div>
+            </div>
+
         </div>
     </section>
-
     <!-- Final CTA Section with Form -->
     <section class="final-cta">
         <div class="final-cta-container">

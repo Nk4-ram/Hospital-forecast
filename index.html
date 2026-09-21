@@ -845,6 +845,68 @@
             color: #3f4850;
             line-height: 1.6;
         }
+        /* Workflow Section Styles */
+        .workflow-container {
+            display: flex;
+            align-items: flex-start;
+            justify-content: space-between;
+            gap: 16px;
+            text-align: center;
+        }
+        .workflow-step {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            max-width: 280px;
+        }
+        .workflow-icon {
+            width: 64px;
+            height: 64px;
+            background: #006194;
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            font-weight: bold;
+            margin-bottom: 24px;
+            box-shadow: 0 4px 12px rgba(0, 97, 148, 0.2);
+            position: relative;
+            z-index: 2;
+        }
+        .workflow-title {
+            font-size: 20px;
+            font-weight: bold;
+            color: #131b2e;
+            margin-bottom: 12px;
+        }
+        .workflow-desc {
+            font-size: 14px;
+            color: #3f4850;
+            line-height: 1.6;
+        }
+        .workflow-connector {
+            flex: 1;
+            height: 2px;
+            background: #cbd5e1;
+            margin-top: 32px;
+            position: relative;
+            z-index: 1;
+        }
+        
+        /* Make it stack neatly on mobile phones */
+        @media (max-width: 768px) {
+            .workflow-container {
+                flex-direction: column;
+                align-items: center;
+                gap: 48px;
+            }
+            .workflow-connector {
+                display: none; /* Hides the connecting lines on small screens */
+            }
+        }
     </style>
 </head>
 <body>
@@ -1040,13 +1102,45 @@
         </div>
     </section>
 
-    <section class="section section-alt">
-        <div class="section-content">
-            <h2 style="color: #131b2e; margin-bottom: 16px;">4. How It Works</h2>
-            <p>3-step visual workflow: Collect → Analyze → Forecast</p>
+    <section class="section section-alt" id="how-it-works-section">
+        <div class="section-content" style="max-width: 1000px; margin: 0 auto; width: 100%;">
+            
+            <div style="text-align: center; margin-bottom: 64px;">
+                <h2 style="color: #131b2e; font-size: 32px; margin-bottom: 16px; letter-spacing: -0.5px;">How It Works</h2>
+                <p style="color: #3f4850; max-width: 600px; margin: 0 auto; font-size: 16px;">From raw historical data to proactive resource allocation in three simple steps.</p>
+            </div>
+
+            <div class="workflow-container">
+                <!-- Step 1 -->
+                <div class="workflow-step">
+                    <div class="workflow-icon">1</div>
+                    <h3 class="workflow-title">Collect</h3>
+                    <p class="workflow-desc">Securely integrate historical admission data and real-time electronic health record (EHR) census feeds.</p>
+                </div>
+                
+                <!-- Connector Line -->
+                <div class="workflow-connector"></div>
+
+                <!-- Step 2 -->
+                <div class="workflow-step">
+                    <div class="workflow-icon">2</div>
+                    <h3 class="workflow-title">Analyze</h3>
+                    <p class="workflow-desc">Our AI engine processes seasonality, local health trends, and department-specific demand cycles.</p>
+                </div>
+                
+                <!-- Connector Line -->
+                <div class="workflow-connector"></div>
+
+                <!-- Step 3 -->
+                <div class="workflow-step">
+                    <div class="workflow-icon">3</div>
+                    <h3 class="workflow-title">Forecast</h3>
+                    <p class="workflow-desc">Receive 14-day capacity predictions, surge alerts, and automated staffing recommendations.</p>
+                </div>
+            </div>
+
         </div>
     </section>
-
    <section class="section" id="analytics-section">
         <div class="section-content" style="max-width: 1000px; margin: 0 auto; width: 100%;">
             <h2 style="color: #131b2e; margin-bottom: 8px;">Forecast Analytics Dashboard</h2>

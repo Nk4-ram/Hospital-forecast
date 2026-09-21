@@ -612,6 +612,70 @@
                 line-height: 36px;
             }
         }
+        /* Alert Card Styles */
+        .alert-card {
+            background: white;
+            border-left: 6px solid #e53e3e; 
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 16px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            transition: transform 0.2s ease;
+        }
+        .alert-card:hover {
+            transform: translateY(-2px);
+        }
+        .alert-warning {
+            border-left-color: #dd6b20; 
+        }
+        .alert-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .alert-title {
+            font-weight: bold;
+            font-size: 18px;
+            color: #131b2e;
+        }
+        .alert-badge {
+            padding: 4px 12px;
+            border-radius: 9999px;
+            font-size: 11px;
+            font-weight: bold;
+            color: white;
+            letter-spacing: 0.5px;
+        }
+        .badge-critical { background: #e53e3e; }
+        .badge-warning { background: #dd6b20; }
+        
+        .alert-meta {
+            font-size: 13px;
+            color: #3f4850;
+            display: flex;
+            gap: 16px;
+            opacity: 0.8;
+        }
+        .alert-message {
+            font-size: 15px;
+            color: #131b2e;
+            margin-top: 8px;
+            line-height: 1.5;
+        }
+        .alert-action {
+            background: #f2f3ff;
+            padding: 12px;
+            border-radius: 6px;
+            font-size: 14px;
+            font-weight: bold;
+            color: #006194;
+            margin-top: 8px;
+            display: flex;
+            gap: 8px;
+        }
     </style>
 </head>
 <body>

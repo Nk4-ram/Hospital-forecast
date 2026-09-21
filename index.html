@@ -984,6 +984,63 @@
             font-size: 13px;
             color: #3f4850;
         }
+        /* Insights Section Styles */
+        .insights-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 24px;
+            text-align: left;
+        }
+        .insight-card {
+            background: white;
+            padding: 24px;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+            border-top: 4px solid #007bb9;
+            transition: transform 0.2s ease;
+            display: flex;
+            flex-direction: column;
+        }
+        .insight-card:hover {
+            transform: translateY(-4px);
+        }
+        .insight-icon {
+            font-size: 24px;
+            margin-bottom: 12px;
+        }
+        .insight-tag {
+            font-size: 11px;
+            font-weight: bold;
+            color: #006a61;
+            background: #e6f6f4;
+            padding: 4px 8px;
+            border-radius: 4px;
+            display: inline-block;
+            margin-bottom: 12px;
+            align-self: flex-start;
+            text-transform: uppercase;
+        }
+        .insight-title {
+            font-size: 18px;
+            color: #131b2e;
+            margin-bottom: 12px;
+            line-height: 1.3;
+        }
+        .insight-desc {
+            font-size: 14px;
+            color: #3f4850;
+            line-height: 1.6;
+            margin-bottom: 20px;
+            flex-grow: 1; /* Pushes the action box to the bottom */
+        }
+        .insight-action {
+            background: #f8fafc;
+            padding: 12px;
+            border-radius: 8px;
+            font-size: 13px;
+            color: #131b2e;
+            border-left: 3px solid #006194;
+        }
     </style>
 </head>
 <body>
@@ -1273,11 +1330,65 @@
         </div>
     </section>
 
-    <section class="section section-alt">
-        <div class="section-content">
-            <h2 style="color: #131b2e; margin-bottom: 16px;">10. Insights Section</h2>
-            <p>Actionable insights from hospital forecast data.</p>
+   <section class="section section-alt" id="insights-section">
+        <div class="section-content" style="max-width: 1000px; margin: 0 auto; width: 100%;">
+            
+            <div style="text-align: center; margin-bottom: 48px;">
+                <h2 style="color: #131b2e; font-size: 32px; margin-bottom: 16px; letter-spacing: -0.5px;">AI-Driven Operational Insights</h2>
+                <p style="color: #3f4850; max-width: 600px; margin: 0 auto; font-size: 16px;">Automated recommendations based on hidden patterns detected in your historical admission data.</p>
+            </div>
+
+            <!-- The insight cards will be injected here -->
+            <div id="insights-container" class="insights-grid"></div>
+
         </div>
+
+        <!-- Bundled Script specifically for this section -->
+        <script>
+            (function() {
+                const insightsData = [
+                    {
+                        icon: "📈",
+                        tag: "Admission Trends",
+                        title: "Weekend Surge Pattern",
+                        description: "Historical data shows a consistent 15% spike in ED admissions on Saturday evenings between 6 PM and 11 PM.",
+                        action: "Shift 2 overlapping triage nurses to the Saturday evening block."
+                    },
+                    {
+                        icon: "🚪",
+                        tag: "Patient Flow",
+                        title: "Monday Discharge Bottleneck",
+                        description: "Average Length of Stay (ALOS) increases by 0.6 days when patients are ready for discharge on Sundays due to pending lab results.",
+                        action: "Prioritize weekend lab processing for pending Monday discharges."
+                    },
+                    {
+                        icon: "💸",
+                        tag: "Resource Optimization",
+                        title: "Float Pool Underutilization",
+                        description: "The ICU has relied on expensive agency nurses for 3 consecutive weeks while Med-Surg float pool nurses were available.",
+                        action: "Cross-train 4 Med-Surg nurses for step-down ICU overflow."
+                    }
+                ];
+
+                const container = document.getElementById('insights-container');
+                if (!container) return;
+
+                insightsData.forEach(insight => {
+                    const card = document.createElement('div');
+                    card.className = 'insight-card';
+                    card.innerHTML = `
+                        <div class="insight-icon">${insight.icon}</div>
+                        <div class="insight-tag">${insight.tag}</div>
+                        <h3 class="insight-title">${insight.title}</h3>
+                        <p class="insight-desc">${insight.description}</p>
+                        <div class="insight-action">
+                            <strong>Recommendation:</strong><br/>${insight.action}
+                        </div>
+                    `;
+                    container.appendChild(card);
+                });
+            })();
+        </script>
     </section>
 
     <section class="section">

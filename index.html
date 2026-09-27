@@ -1750,16 +1750,231 @@
             calculateERMetrics();
         })();
     </script>
-  <section class="section" id="resource-section">
-        <div class="section-content" style="max-width: 1000px; margin: 0 auto; width: 100%;">
-            <h2 style="color: #131b2e; margin-bottom: 8px;">Resource Planning & Staffing</h2>
-            <p style="margin-bottom: 32px; color: #3f4850;">Optimize staffing and bed allocation based on projected peaks.</p>
+ <!-- 7. ICU Bed Transfer Probability & Deterioration Risk Estimator -->
+    <section id="icu-transfer-predictor" class="section" style="padding: 48px 24px; min-height: auto; background-color: #ffffff;">
+        <div style="width: 100%; max-width: 1100px; margin: 0 auto; background: #0f172a; border: 1px solid #1e293b; border-radius: 20px; padding: 32px; color: #f8fafc; box-shadow: 0 16px 36px rgba(0, 0, 0, 0.25);">
             
-            <!-- JavaScript will inject the resource cards here -->
-            <div id="resource-container" class="resource-grid"></div>
+            <!-- Section Header -->
+            <div style="margin-bottom: 24px; text-align: left;">
+                <span style="font-size: 11px; text-transform: uppercase; letter-spacing: 0.08em; font-weight: 700; color: #a78bfa; background: rgba(167, 139, 250, 0.12); border: 1px solid rgba(167, 139, 250, 0.25); padding: 4px 10px; border-radius: 999px;">
+                    Predictive Clinical Logistics • ICU Preparedness
+                </span>
+                <h2 style="font-size: 26px; font-weight: 800; margin: 12px 0 6px 0; color: #ffffff;">Inpatient Deterioration & ICU Transfer Probability</h2>
+                <p style="font-size: 14px; color: #94a3b8; margin: 0;">Forecast 24-hour ward-to-ICU escalation rates using early warning vital scores (NEWS2), respiratory failure risks, and sepsis indicators to prevent sudden critical-bed deficits.</p>
+            </div>
+
+            <!-- Two-Column Grid -->
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 24px; text-align: left;">
+                
+                <!-- Left: Ward Vitals & Patient Risk Controls -->
+                <div style="background: rgba(15, 23, 42, 0.9); border: 1px solid #334155; padding: 22px; border-radius: 12px;">
+                    <h3 style="font-size: 14px; margin: 0 0 18px 0; color: #cbd5e1; text-transform: uppercase; letter-spacing: 0.05em;">Ward Acuity & Risk Parameters</h3>
+
+                    <!-- Current General Ward Census -->
+                    <div style="margin-bottom: 16px;">
+                        <div style="display: flex; justify-content: space-between; font-size: 12px; font-weight: 600; margin-bottom: 4px;">
+                            <span style="color: #94a3b8;">General Ward Occupancy</span>
+                            <span id="wardCensusVal" style="color: #38bdf8; font-weight: 700;">120 Patients</span>
+                        </div>
+                        <input type="range" id="wardCensus" min="50" max="180" value="120" style="width: 100%; accent-color: #38bdf8; cursor: pointer;">
+                    </div>
+
+                    <!-- Moderate-to-High NEWS2 Score % -->
+                    <div style="margin-bottom: 16px;">
+                        <div style="display: flex; justify-content: space-between; font-size: 12px; font-weight: 600; margin-bottom: 4px;">
+                            <span style="color: #94a3b8;">High Early Warning Scores (NEWS2 ≥ 5)</span>
+                            <span id="newsVal" style="color: #fbbf24; font-weight: 700;">14% of Ward</span>
+                        </div>
+                        <input type="range" id="newsScore" min="2" max="35" value="14" style="width: 100%; accent-color: #fbbf24; cursor: pointer;">
+                    </div>
+
+                    <!-- High-Flow Oxygen / CPAP Usage -->
+                    <div style="margin-bottom: 16px;">
+                        <div style="display: flex; justify-content: space-between; font-size: 12px; font-weight: 600; margin-bottom: 4px;">
+                            <span style="color: #94a3b8;">Patients on Supplemental High-Flow O₂</span>
+                            <span id="oxygenVal" style="color: #34d399; font-weight: 700;">8 Patients</span>
+                        </div>
+                        <input type="range" id="oxygenCount" min="0" max="25" value="8" style="width: 100%; accent-color: #34d399; cursor: pointer;">
+                    </div>
+
+                    <!-- Available ICU Beds -->
+                    <div style="margin-bottom: 16px;">
+                        <div style="display: flex; justify-content: space-between; font-size: 12px; font-weight: 600; margin-bottom: 4px;">
+                            <span style="color: #94a3b8;">Currently Unoccupied ICU Beds</span>
+                            <span id="icuAvailableVal" style="color: #a78bfa; font-weight: 700;">5 Beds Open</span>
+                        </div>
+                        <input type="range" id="icuAvailable" min="0" max="12" value="5" style="width: 100%; accent-color: #a78bfa; cursor: pointer;">
+                    </div>
+
+                    <!-- Sepsis Alert Checkbox -->
+                    <div style="display: flex; align-items: center; gap: 8px; margin-top: 6px;">
+                        <input type="checkbox" id="sepsisAlert" style="width: 16px; height: 16px; accent-color: #f43f5e; cursor: pointer;">
+                        <label for="sepsisAlert" style="font-size: 13px; color: #cbd5e1; cursor: pointer;">Active Sepsis / Severe Bacteremia Cluster Detected</label>
+                    </div>
+                </div>
+
+                <!-- Right: Output Logistics Panel -->
+                <div style="background: #090e17; border: 1px solid #1e293b; padding: 22px; border-radius: 12px; display: flex; flex-direction: column; justify-content: space-between;">
+                    <div>
+                        <!-- Risk Badge -->
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+                            <span style="font-size: 11px; text-transform: uppercase; font-weight: 700; color: #64748b;">ICU Transfer Threat Level</span>
+                            <span id="icuThreatBadge" style="padding: 4px 12px; border-radius: 999px; font-size: 11px; font-weight: 700; background: rgba(245, 158, 11, 0.15); color: #fbbf24; border: 1px solid rgba(245, 158, 11, 0.3);">
+                                MODERATE BOTTLENECK
+                            </span>
+                        </div>
+
+                        <!-- Expected ICU Transfer Count -->
+                        <div style="margin-bottom: 20px;">
+                            <div style="display: flex; align-items: baseline; gap: 8px;">
+                                <span id="expectedTransfers" style="font-size: 46px; font-weight: 900; color: #ffffff; line-height: 1;">4</span>
+                                <span style="font-size: 18px; color: #94a3b8; font-weight: 600;">patients / 24h</span>
+                            </div>
+                            <div style="font-size: 13px; color: #94a3b8; margin-top: 4px;">Projected emergency ward-to-ICU transfers</div>
+                        </div>
+
+                        <!-- Net ICU Bed Balance Bar -->
+                        <div style="margin-bottom: 18px;">
+                            <div style="display: flex; justify-content: space-between; font-size: 12px; margin-bottom: 6px;">
+                                <span style="color: #94a3b8;">Predicted ICU Buffer vs Transfers</span>
+                                <span id="bedNetLabel" style="font-weight: 700; color: #34d399;">+1 Bed Surplus</span>
+                            </div>
+                            <div style="height: 8px; width: 100%; background: #1e293b; border-radius: 999px; overflow: hidden;">
+                                <div id="icuBufferFill" style="height: 100%; width: 65%; background: #34d399; transition: width 0.3s ease, background 0.3s ease;"></div>
+                            </div>
+                        </div>
+
+                        <!-- Operational Cards -->
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 16px;">
+                            <div style="background: #1e293b; padding: 10px 12px; border-radius: 8px; border: 1px solid #334155;">
+                                <div style="font-size: 11px; color: #94a3b8;">Overall Escalation Rate</div>
+                                <div id="escalationRateDisplay" style="font-size: 16px; font-weight: 700; color: #38bdf8; margin-top: 2px;">3.3% of Ward</div>
+                            </div>
+                            <div style="background: #1e293b; padding: 10px 12px; border-radius: 8px; border: 1px solid #334155;">
+                                <div style="font-size: 11px; color: #94a3b8;">ICU Nurses Needed</div>
+                                <div id="icuNursesDisplay" style="font-size: 16px; font-weight: 700; color: #a78bfa; margin-top: 2px;">4 Nurses (1:1)</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Clinical Triage Directive -->
+                    <div style="background: rgba(15, 23, 42, 0.8); border: 1px solid #334155; padding: 12px; border-radius: 8px;">
+                        <div style="font-size: 11px; text-transform: uppercase; font-weight: 700; color: #64748b; margin-bottom: 4px;">Bed Management Directive</div>
+                        <div id="icuActionText" style="font-size: 12px; color: #cbd5e1; line-height: 1.4;">
+                            Reserve remaining open ICU beds for ward escalations. Restrict external elective ICU transfers.
+                        </div>
+                    </div>
+                </div>
+
+            </div>
         </div>
     </section>
 
+    <!-- ICU Transfer Engine Script -->
+    <script>
+        (function initICUTransferPredictor() {
+            const wardCensus = document.getElementById('wardCensus');
+            const newsScore = document.getElementById('newsScore');
+            const oxygenCount = document.getElementById('oxygenCount');
+            const icuAvailable = document.getElementById('icuAvailable');
+            const sepsisAlert = document.getElementById('sepsisAlert');
+
+            const wardCensusVal = document.getElementById('wardCensusVal');
+            const newsVal = document.getElementById('newsVal');
+            const oxygenVal = document.getElementById('oxygenVal');
+            const icuAvailableVal = document.getElementById('icuAvailableVal');
+
+            const expectedTransfers = document.getElementById('expectedTransfers');
+            const icuThreatBadge = document.getElementById('icuThreatBadge');
+            const bedNetLabel = document.getElementById('bedNetLabel');
+            const icuBufferFill = document.getElementById('icuBufferFill');
+            const escalationRateDisplay = document.getElementById('escalationRateDisplay');
+            const icuNursesDisplay = document.getElementById('icuNursesDisplay');
+            const icuActionText = document.getElementById('icuActionText');
+
+            function calculateICUProbability() {
+                const census = parseInt(wardCensus.value, 10);
+                const newsPct = parseInt(newsScore.value, 10);
+                const oxygenPts = parseInt(oxygenCount.value, 10);
+                const openBeds = parseInt(icuAvailable.value, 10);
+                const hasSepsis = sepsisAlert.checked;
+
+                // Update input displays
+                wardCensusVal.textContent = census + ' Patients';
+                newsVal.textContent = newsPct + '% of Ward';
+                oxygenVal.textContent = oxygenPts + ' Patients';
+                icuAvailableVal.textContent = openBeds + (openBeds === 1 ? ' Bed Open' : ' Beds Open');
+
+                // Clinical Model Weights for 24h ICU Deterioration
+                // 1. High NEWS2 patients: ~18% probability of deteriorating within 24h
+                const highRiskPatients = census * (newsPct / 100);
+                const newsTransfers = highRiskPatients * 0.18;
+
+                // 2. High-Flow O2 patients: ~22% fail non-invasive therapy and require intubation/ICU
+                const oxygenTransfers = oxygenPts * 0.22;
+
+                // 3. Sepsis multiplier: Sepsis clusters cause rapid organ shock
+                const sepsisMultiplier = hasSepsis ? 1.45 : 1.0;
+
+                // Raw predicted transfer count
+                const rawTransfers = (newsTransfers + oxygenTransfers) * sepsisMultiplier;
+                const predictedTransfers = Math.max(0, Math.round(rawTransfers));
+
+                // Net Bed Balance: Open ICU beds minus Expected Transfers
+                const netBalance = openBeds - predictedTransfers;
+                const escalationRate = ((predictedTransfers / census) * 100).toFixed(1);
+
+                // Update Output Labels
+                expectedTransfers.textContent = predictedTransfers;
+                escalationRateDisplay.textContent = escalationRate + '% of Ward';
+                icuNursesDisplay.textContent = predictedTransfers + ' Nurses (1:1)';
+
+                // Calculate visual buffer bar
+                const barFill = Math.min(100, Math.max(8, ((openBeds + 2) / (predictedTransfers + openBeds + 1)) * 100));
+                icuBufferFill.style.width = barFill + '%';
+
+                // Evaluate Deficit / Threat Level
+                if (netBalance < 0) {
+                    icuThreatBadge.textContent = 'CRITICAL ICU DEFICIT';
+                    icuThreatBadge.style.background = 'rgba(244, 63, 94, 0.15)';
+                    icuThreatBadge.style.color = '#f43f5e';
+                    icuThreatBadge.style.borderColor = 'rgba(244, 63, 94, 0.3)';
+                    icuBufferFill.style.background = '#f43f5e';
+                    bedNetLabel.textContent = `${Math.abs(netBalance)} ICU Beds Short`;
+                    bedNetLabel.style.color = '#f43f5e';
+                    icuActionText.textContent = 'CRITICAL DEFICIT: Immediate action required. Expedite step-down of stable ICU patients to telemetry and initiate PACU/recovery overflow beds.';
+                } else if (netBalance <= 1) {
+                    icuThreatBadge.textContent = 'NEAR CAPACITY WARNING';
+                    icuThreatBadge.style.background = 'rgba(245, 158, 11, 0.15)';
+                    icuThreatBadge.style.color = '#fbbf24';
+                    icuThreatBadge.style.borderColor = 'rgba(245, 158, 11, 0.3)';
+                    icuBufferFill.style.background = '#fbbf24';
+                    bedNetLabel.textContent = netBalance === 0 ? '0 Beds Remaining' : '+1 Bed Buffer';
+                    bedNetLabel.style.color = '#fbbf24';
+                    icuActionText.textContent = 'High probability of filling all ICU beds. Reserve all remaining capacity for internal deteriorating ward patients; freeze outside hospital transfers.';
+                } else {
+                    icuThreatBadge.textContent = 'ADEQUATE ICU BUFFER';
+                    icuThreatBadge.style.background = 'rgba(52, 211, 153, 0.15)';
+                    icuThreatBadge.style.color = '#34d399';
+                    icuThreatBadge.style.borderColor = 'rgba(52, 211, 153, 0.3)';
+                    icuBufferFill.style.background = '#34d399';
+                    bedNetLabel.textContent = `+${netBalance} Beds Surplus`;
+                    bedNetLabel.style.color = '#34d399';
+                    icuActionText.textContent = 'ICU capacity is currently sufficient to absorb projected 24-hour ward deterioration events without operational disruptions.';
+                }
+            }
+
+            // Bind Event Listeners
+            wardCensus.addEventListener('input', calculateICUProbability);
+            newsScore.addEventListener('input', calculateICUProbability);
+            oxygenCount.addEventListener('input', calculateICUProbability);
+            icuAvailable.addEventListener('input', calculateICUProbability);
+            sepsisAlert.addEventListener('change', calculateICUProbability);
+
+            // Run on initial load
+            calculateICUProbability();
+        })();
+    </script>
    <section class="section section-alt" id="alerts-section">
         <div class="section-content" style="max-width: 800px; text-align: left; margin: 0 auto;">
             <h2 style="color: #131b2e; margin-bottom: 8px; text-align: center;">Active Capacity Alerts</h2>

@@ -1985,20 +1985,243 @@
         </div>
     </section>
 
-  <section class="section" id="gap-section">
-        <div class="section-content" style="max-width: 1000px; margin: 0 auto; width: 100%;">
+ <!-- 9. Predictive Nurse Absenteeism & Shift Shortage Estimator -->
+    <section id="nurse-shortage-predictor" class="section" style="padding: 48px 24px; min-height: auto; background-color: #ffffff;">
+        <div style="width: 100%; max-width: 1100px; margin: 0 auto; background: #0f172a; border: 1px solid #1e293b; border-radius: 20px; padding: 32px; color: #f8fafc; box-shadow: 0 16px 36px rgba(0, 0, 0, 0.25);">
             
-            <div style="text-align: center; margin-bottom: 48px;">
-                <h2 style="color: #131b2e; font-size: 32px; margin-bottom: 16px; letter-spacing: -0.5px;">Resource Gap Analysis</h2>
-                <p style="color: #3f4850; max-width: 600px; margin: 0 auto; font-size: 16px;">Visually identify where projected peak demand exceeds your current available capacity.</p>
+            <!-- Section Header -->
+            <div style="margin-bottom: 24px; text-align: left;">
+                <span style="font-size: 11px; text-transform: uppercase; letter-spacing: 0.08em; font-weight: 700; color: #38bdf8; background: rgba(56, 189, 248, 0.12); border: 1px solid rgba(56, 189, 248, 0.25); padding: 4px 10px; border-radius: 999px;">
+                    Workforce Analytics • Roster Risk Engine
+                </span>
+                <h2 style="font-size: 26px; font-weight: 800; margin: 12px 0 6px 0; color: #ffffff;"> Nurse Absenteeism & Shift Shortage Predictor</h2>
+                <p style="font-size: 14px; color: #94a3b8; margin: 0;">Forecast call-out probabilities, net nurse deficits, and on-call float pool activations across upcoming hospital shifts using burnout metrics and community illness trends.</p>
             </div>
 
-            <!-- JavaScript will inject the gap bars here -->
-            <div id="gap-container" class="gap-grid"></div>
+            <!-- Two-Column Interactive Grid -->
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 24px; text-align: left;">
+                
+                <!-- Left: Shift Roster & Stress Controls -->
+                <div style="background: rgba(15, 23, 42, 0.9); border: 1px solid #334155; padding: 22px; border-radius: 12px;">
+                    <h3 style="font-size: 14px; margin: 0 0 18px 0; color: #cbd5e1; text-transform: uppercase; letter-spacing: 0.05em;">Upcoming Shift Parameters</h3>
 
+                    <!-- Shift Window Selection -->
+                    <div style="margin-bottom: 14px;">
+                        <label style="display: block; font-size: 12px; font-weight: 600; color: #94a3b8; margin-bottom: 6px;">Target Shift Window</label>
+                        <select id="shiftWindow" style="width: 100%; background: #1e293b; color: #f8fafc; border: 1px solid #475569; padding: 8px 10px; border-radius: 6px; font-size: 13px; outline: none;">
+                            <option value="1.0">Day Shift (07:00 – 19:00)</option>
+                            <option value="1.3" selected>Night Shift (19:00 – 07:00) • Higher Fatigue</option>
+                            <option value="1.45">Weekend Night Shift • Critical Call-Out Risk</option>
+                        </select>
+                    </div>
+
+                    <!-- Scheduled Headcount -->
+                    <div style="margin-bottom: 14px;">
+                        <div style="display: flex; justify-content: space-between; font-size: 12px; font-weight: 600; margin-bottom: 4px;">
+                            <span style="color: #94a3b8;">Scheduled Shift Nurses</span>
+                            <span id="scheduledNursesVal" style="color: #38bdf8; font-weight: 700;">48 Nurses</span>
+                        </div>
+                        <input type="range" id="scheduledNurses" min="20" max="80" value="48" style="width: 100%; accent-color: #38bdf8; cursor: pointer;">
+                    </div>
+
+                    <!-- Consecutive Shifts (Fatigue Index) -->
+                    <div style="margin-bottom: 14px;">
+                        <div style="display: flex; justify-content: space-between; font-size: 12px; font-weight: 600; margin-bottom: 4px;">
+                            <span style="color: #94a3b8;">Staff Overtime / Consecutive Shifts Index</span>
+                            <span id="fatigueVal" style="color: #fbbf24; font-weight: 700;">Level 3 (Moderate Burnout)</span>
+                        </div>
+                        <input type="range" id="fatigueIndex" min="1" max="5" value="3" style="width: 100%; accent-color: #fbbf24; cursor: pointer;">
+                    </div>
+
+                    <!-- Community Viral Spread (Flu/COVID) -->
+                    <div style="margin-bottom: 14px;">
+                        <div style="display: flex; justify-content: space-between; font-size: 12px; font-weight: 600; margin-bottom: 4px;">
+                            <span style="color: #94a3b8;">Community Viral Spread Rate (Staff Infection Risk)</span>
+                            <span id="staffFluVal" style="color: #34d399; font-weight: 700;">5 / 10</span>
+                        </div>
+                        <input type="range" id="staffFlu" min="1" max="10" value="5" style="width: 100%; accent-color: #34d399; cursor: pointer;">
+                    </div>
+
+                    <!-- On-Call Float Pool -->
+                    <div style="margin-bottom: 8px;">
+                        <div style="display: flex; justify-content: space-between; font-size: 12px; font-weight: 600; margin-bottom: 4px;">
+                            <span style="color: #94a3b8;">Available Float Pool Standbys</span>
+                            <span id="floatPoolVal" style="color: #a78bfa; font-weight: 700;">4 Float Nurses</span>
+                        </div>
+                        <input type="range" id="floatPool" min="0" max="10" value="4" style="width: 100%; accent-color: #a78bfa; cursor: pointer;">
+                    </div>
+                </div>
+
+                <!-- Right: Output Logistics Panel -->
+                <div style="background: #090e17; border: 1px solid #1e293b; padding: 22px; border-radius: 12px; display: flex; flex-direction: column; justify-content: space-between;">
+                    <div>
+                        <!-- Shortage Risk Badge -->
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+                            <span style="font-size: 11px; text-transform: uppercase; font-weight: 700; color: #64748b;">Staff Shortage Risk</span>
+                            <span id="shortageBadge" style="padding: 4px 12px; border-radius: 999px; font-size: 11px; font-weight: 700; background: rgba(245, 158, 11, 0.15); color: #fbbf24; border: 1px solid rgba(245, 158, 11, 0.3);">
+                                MODERATE SHORTAGE RISK
+                            </span>
+                        </div>
+
+                        <!-- Expected Call-Outs -->
+                        <div style="margin-bottom: 20px;">
+                            <div style="display: flex; align-items: baseline; gap: 8px;">
+                                <span id="predictedCallOuts" style="font-size: 46px; font-weight: 900; color: #ffffff; line-height: 1;">5</span>
+                                <span style="font-size: 18px; color: #94a3b8; font-weight: 600;">call-outs expected</span>
+                            </div>
+                            <div style="font-size: 13px; color: #94a3b8; margin-top: 4px;">Projected unplanned absences for this shift</div>
+                        </div>
+
+                        <!-- Net Staffing Meter -->
+                        <div style="margin-bottom: 18px;">
+                            <div style="display: flex; justify-content: space-between; font-size: 12px; margin-bottom: 6px;">
+                                <span style="color: #94a3b8;">Shift Roster Health (Target: 44 Nurses)</span>
+                                <span id="netStaffLabel" style="font-weight: 700; color: #34d399;">+3 Staff Buffer</span>
+                            </div>
+                            <div style="height: 8px; width: 100%; background: #1e293b; border-radius: 999px; overflow: hidden;">
+                                <div id="rosterFill" style="height: 100%; width: 85%; background: #34d399; transition: width 0.3s ease, background 0.3s ease;"></div>
+                            </div>
+                        </div>
+
+                        <!-- Key Workforce KPIs -->
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 16px;">
+                            <div style="background: #1e293b; padding: 10px 12px; border-radius: 8px; border: 1px solid #334155;">
+                                <div style="font-size: 11px; color: #94a3b8;">Absenteeism Rate</div>
+                                <div id="absenteeismRateDisplay" style="font-size: 16px; font-weight: 700; color: #38bdf8; margin-top: 2px;">10.4%</div>
+                            </div>
+                            <div style="background: #1e293b; padding: 10px 12px; border-radius: 8px; border: 1px solid #334155;">
+                                <div style="font-size: 11px; color: #94a3b8;">Float Coverage</div>
+                                <div id="floatCoverageDisplay" style="font-size: 16px; font-weight: 700; color: #a78bfa; margin-top: 2px;">4 / 5 Absorbed</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Action Directive -->
+                    <div style="background: rgba(15, 23, 42, 0.8); border: 1px solid #334155; padding: 12px; border-radius: 8px;">
+                        <div style="font-size: 11px; text-transform: uppercase; font-weight: 700; color: #64748b; margin-bottom: 4px;">Staffing Coordinator Directive</div>
+                        <div id="staffDirectiveText" style="font-size: 12px; color: #cbd5e1; line-height: 1.4;">
+                            On-call float pool adequate to cover expected call-outs. Maintain standby status without mandatory overtime call-ins.
+                        </div>
+                    </div>
+                </div>
+
+            </div>
         </div>
     </section>
 
+    <!-- Nurse Shortage Engine Script -->
+    <script>
+        (function initNurseShortagePredictor() {
+            const shiftWindow = document.getElementById('shiftWindow');
+            const scheduledNurses = document.getElementById('scheduledNurses');
+            const fatigueIndex = document.getElementById('fatigueIndex');
+            const staffFlu = document.getElementById('staffFlu');
+            const floatPool = document.getElementById('floatPool');
+
+            const scheduledNursesVal = document.getElementById('scheduledNursesVal');
+            const fatigueVal = document.getElementById('fatigueVal');
+            const staffFluVal = document.getElementById('staffFluVal');
+            const floatPoolVal = document.getElementById('floatPoolVal');
+
+            const predictedCallOuts = document.getElementById('predictedCallOuts');
+            const shortageBadge = document.getElementById('shortageBadge');
+            const netStaffLabel = document.getElementById('netStaffLabel');
+            const rosterFill = document.getElementById('rosterFill');
+            const absenteeismRateDisplay = document.getElementById('absenteeismRateDisplay');
+            const floatCoverageDisplay = document.getElementById('floatCoverageDisplay');
+            const staffDirectiveText = document.getElementById('staffDirectiveText');
+
+            const fatigueLabels = [
+                '',
+                'Level 1 (Fresh Staff / Low OT)',
+                'Level 2 (Mild Consecutive Shifts)',
+                'Level 3 (Moderate Burnout)',
+                'Level 4 (Elevated Overtime Fatigue)',
+                'Level 5 (Severe Staff Exhaustion)'
+            ];
+
+            function calculateShortage() {
+                const shiftFactor = parseFloat(shiftWindow.value);
+                const scheduled = parseInt(scheduledNurses.value, 10);
+                const fatigue = parseInt(fatigueIndex.value, 10);
+                const flu = parseInt(staffFlu.value, 10);
+                const floats = parseInt(floatPool.value, 10);
+
+                // Update input text indicators
+                scheduledNursesVal.textContent = scheduled + ' Nurses';
+                fatigueVal.textContent = fatigueLabels[fatigue];
+                staffFluVal.textContent = flu + ' / 10';
+                floatPoolVal.textContent = floats + (floats === 1 ? ' Float Nurse' : ' Float Nurses');
+
+                // Clinical Workforce Modeling:
+                // 1. Baseline voluntary / acute call-out rate ~ 4.5%
+                const baseProb = 0.045;
+                // 2. Fatigue contribution: +1.5% probability per burnout step
+                const fatigueProb = (fatigue - 1) * 0.015;
+                // 3. Viral infection risk: +0.7% probability per viral index point
+                const illnessProb = (flu - 1) * 0.007;
+
+                // Total calculated call-out probability
+                const totalCallOutProb = Math.min(0.35, (baseProb + fatigueProb + illnessProb) * shiftFactor);
+                const expectedAbsences = Math.round(scheduled * totalCallOutProb);
+                const absenteeismRate = (totalCallOutProb * 100).toFixed(1);
+
+                // Safe minimum baseline staffing needed for hospital (approx 85% of standard scheduled)
+                const minimumSafeTarget = Math.round(scheduled * 0.88);
+                const effectiveStaffAvailable = scheduled - expectedAbsences + floats;
+                const netVariance = effectiveStaffAvailable - minimumSafeTarget;
+
+                // Update KPI Displays
+                predictedCallOuts.textContent = expectedAbsences;
+                absenteeismRateDisplay.textContent = absenteeismRate + '%';
+                floatCoverageDisplay.textContent = `${Math.min(floats, expectedAbsences)} / ${expectedAbsences} Absorbed`;
+
+                // Gauge fill percentage
+                const fillPercent = Math.min(100, Math.max(10, Math.round((effectiveStaffAvailable / scheduled) * 100)));
+                rosterFill.style.width = fillPercent + '%';
+
+                // Evaluate Net Shift Health and Risk
+                if (netVariance < 0) {
+                    shortageBadge.textContent = 'CRITICAL STAFF SHORTAGE';
+                    shortageBadge.style.background = 'rgba(244, 63, 94, 0.15)';
+                    shortageBadge.style.color = '#f43f5e';
+                    shortageBadge.style.borderColor = 'rgba(244, 63, 94, 0.3)';
+                    rosterFill.style.background = '#f43f5e';
+                    netStaffLabel.textContent = `${Math.abs(netVariance)} Nurses Short of Safe Ratio`;
+                    netStaffLabel.style.color = '#f43f5e';
+                    staffDirectiveText.textContent = `ALERT: Float pool depleted. Trigger mandatory on-call registry or offer crisis incentive pay to secure ${Math.abs(netVariance)} additional shifts.`;
+                } else if (netVariance <= 2) {
+                    shortageBadge.textContent = 'TIGHT ROSTER WARNING';
+                    shortageBadge.style.background = 'rgba(245, 158, 11, 0.15)';
+                    shortageBadge.style.color = '#fbbf24';
+                    shortageBadge.style.borderColor = 'rgba(245, 158, 11, 0.3)';
+                    rosterFill.style.background = '#fbbf24';
+                    netStaffLabel.textContent = netVariance === 0 ? 'Exact Minimum Staff' : `+${netVariance} Buffer Only`;
+                    netStaffLabel.style.color = '#fbbf24';
+                    staffDirectiveText.textContent = 'Roster is operating at minimum legal safety ratios. Put secondary on-call staff on standby in case of further call-outs.';
+                } else {
+                    shortageBadge.textContent = 'SAFE ROSTER BUFFER';
+                    shortageBadge.style.background = 'rgba(52, 211, 153, 0.15)';
+                    shortageBadge.style.color = '#34d399';
+                    shortageBadge.style.borderColor = 'rgba(52, 211, 153, 0.3)';
+                    rosterFill.style.background = '#34d399';
+                    netStaffLabel.textContent = `+${netVariance} Staff Surplus Buffer`;
+                    netStaffLabel.style.color = '#34d399';
+                    staffDirectiveText.textContent = 'Available scheduled staff and float standbys comfortably cover expected call-outs. Normal shift workflows approved.';
+                }
+            }
+
+            // Bind Event Listeners
+            shiftWindow.addEventListener('change', calculateShortage);
+            scheduledNurses.addEventListener('input', calculateShortage);
+            fatigueIndex.addEventListener('input', calculateShortage);
+            staffFlu.addEventListener('input', calculateShortage);
+            floatPool.addEventListener('input', calculateShortage);
+
+            // Initial calculation on load
+            calculateShortage();
+        })();
+    </script>
    <section class="section section-alt" id="insights-section">
         <div class="section-content" style="max-width: 1000px; margin: 0 auto; width: 100%;">
             

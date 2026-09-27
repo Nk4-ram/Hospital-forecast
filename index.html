@@ -2283,103 +2283,250 @@
         </script>
     </section>
 
-   <section class="section" id="emergency-section">
-        <div class="section-content" style="max-width: 1000px; margin: 0 auto; width: 100%;">
+   <!-- 11. Emergency Oxygen & Medical Consumables Burn-Rate HUD -->
+    <section id="supply-burn-estimator" class="section" style="padding: 56px 20px; min-height: auto; background-color: #070d18;">
+        <div style="width: 100%; max-width: 1140px; margin: 0 auto; background: #0c1427; border: 1px solid #1a2744; border-radius: 20px; padding: 32px; color: #e2e8f0; box-shadow: 0 20px 50px rgba(0, 0, 0, 0.45); font-family: system-ui, -apple-system, sans-serif;">
             
-            <div style="text-align: center; margin-bottom: 48px;">
-                <div class="eyebrow" style="margin-bottom: 16px; background: #fee2e2; color: #991b1b;">
-                    <span class="eyebrow-dot" style="background: #ef4444; box-shadow: inset 0 0 0 3px rgba(239, 68, 68, 0.3);"></span>
-                    SURGE PROTOCOLS
+            <!-- Terminal Header -->
+            <div style="display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 16px; border-bottom: 1px solid #1a2744; padding-bottom: 20px; margin-bottom: 28px;">
+                <div>
+                    <div style="display: flex; align-items: center; gap: 10px;">
+                        <span style="display: inline-block; width: 10px; height: 10px; border-radius: 50%; background: #38bdf8; box-shadow: 0 0 10px #38bdf8;"></span>
+                        <span style="font-size: 11px; text-transform: uppercase; letter-spacing: 0.12em; font-weight: 800; color: #38bdf8;">Logistics Telemetry System</span>
+                    </div>
+                    <h2 style="font-size: 26px; font-weight: 800; margin: 8px 0 0 0; color: #ffffff;">Critical Oxygen & Consumables Burn-Rate Estimator</h2>
                 </div>
-                <h2 style="color: #131b2e; font-size: 32px; margin-bottom: 16px; letter-spacing: -0.5px;">Emergency Preparedness Scenarios</h2>
-                <p style="color: #3f4850; max-width: 600px; margin: 0 auto; font-size: 16px;">Simulate crisis scenarios and instantly generate resource mobilization plans based on current capacity.</p>
+                <div style="display: flex; gap: 10px;">
+                    <div style="background: #111e38; border: 1px solid #22355c; padding: 6px 14px; border-radius: 8px; font-size: 12px;">
+                        <span style="color: #64748b;">Primary VIE Tank:</span> <strong style="color: #38bdf8;">10,000 L Liquid O₂</strong>
+                    </div>
+                </div>
             </div>
 
-            <!-- The emergency cards will be injected here -->
-            <div id="emergency-container" class="emergency-grid"></div>
+            <!-- 3-Column Cockpit Layout -->
+            <div style="display: grid; grid-template-columns: 140px 1fr 1fr; gap: 24px; align-items: stretch;">
+                
+                <!-- Column 1: Vertical Cryogenic Tank Visualizer -->
+                <div style="background: #080f1e; border: 1px solid #1a2744; border-radius: 14px; padding: 18px 12px; display: flex; flex-direction: column; align-items: center; justify-content: space-between;">
+                    <span style="font-size: 10px; text-transform: uppercase; font-weight: 800; color: #64748b; letter-spacing: 0.08em; text-align: center;">VIE Tank</span>
+                    
+                    <!-- Cylinder Tube -->
+                    <div style="position: relative; width: 52px; height: 260px; background: #0f1c33; border: 2px solid #2a3e66; border-radius: 26px; overflow: hidden; display: flex; flex-direction: column; justify-content: flex-end; padding: 3px;">
+                        <!-- Tank Level Fill -->
+                        <div id="tankFluid" style="width: 100%; height: 75%; background: linear-gradient(180deg, #38bdf8 0%, #0284c7 100%); border-radius: 20px; transition: height 0.4s ease, background 0.4s ease; box-shadow: 0 0 16px rgba(56, 189, 248, 0.4);"></div>
+                        <!-- Marker Lines -->
+                        <div style="position: absolute; top: 25%; left: 0; right: 0; border-top: 1px dashed rgba(255,255,255,0.2);"></div>
+                        <div style="position: absolute; top: 50%; left: 0; right: 0; border-top: 1px dashed rgba(255,255,255,0.2);"></div>
+                        <div style="position: absolute; top: 75%; left: 0; right: 0; border-top: 1px dashed rgba(255,255,255,0.2);"></div>
+                    </div>
 
+                    <div style="text-align: center;">
+                        <div id="tankPctLabel" style="font-size: 18px; font-weight: 900; color: #38bdf8;">75%</div>
+                        <span style="font-size: 10px; color: #64748b;">Remaining</span>
+                    </div>
+                </div>
+
+                <!-- Column 2: Consumption Sliders -->
+                <div style="background: #080f1e; border: 1px solid #1a2744; border-radius: 14px; padding: 22px;">
+                    <h3 style="font-size: 13px; text-transform: uppercase; letter-spacing: 0.08em; color: #94a3b8; margin: 0 0 16px 0;">Surge Consumption Inputs</h3>
+
+                    <!-- ICU Ventilator Patients -->
+                    <div style="margin-bottom: 16px;">
+                        <div style="display: flex; justify-content: space-between; font-size: 12px; margin-bottom: 4px;">
+                            <span style="color: #cbd5e1; font-weight: 600;">Mechanical Ventilator Beds (ICU)</span>
+                            <span id="ventVal" style="color: #f43f5e; font-weight: 800;">12 pts (35 L/m)</span>
+                        </div>
+                        <input type="range" id="ventCount" min="0" max="30" value="12" style="width: 100%; accent-color: #f43f5e; cursor: pointer;">
+                    </div>
+
+                    <!-- High-Flow Nasal Cannula (HFNC) -->
+                    <div style="margin-bottom: 16px;">
+                        <div style="display: flex; justify-content: space-between; font-size: 12px; margin-bottom: 4px;">
+                            <span style="color: #cbd5e1; font-weight: 600;">High-Flow Nasal Cannula (HFNC)</span>
+                            <span id="hfncVal" style="color: #fbbf24; font-weight: 800;">16 pts (45 L/m)</span>
+                        </div>
+                        <input type="range" id="hfncCount" min="0" max="40" value="16" style="width: 100%; accent-color: #fbbf24; cursor: pointer;">
+                    </div>
+
+                    <!-- Standard Ward Oxygen -->
+                    <div style="margin-bottom: 16px;">
+                        <div style="display: flex; justify-content: space-between; font-size: 12px; margin-bottom: 4px;">
+                            <span style="color: #cbd5e1; font-weight: 600;">Low-Flow Ward Oxygen (Nasal Prongs)</span>
+                            <span id="wardO2Val" style="color: #38bdf8; font-weight: 800;">45 pts (4 L/m)</span>
+                        </div>
+                        <input type="range" id="wardO2Count" min="0" max="120" value="45" style="width: 100%; accent-color: #38bdf8; cursor: pointer;">
+                    </div>
+
+                    <!-- Initial Reservoir Level -->
+                    <div style="margin-bottom: 10px;">
+                        <div style="display: flex; justify-content: space-between; font-size: 12px; margin-bottom: 4px;">
+                            <span style="color: #cbd5e1; font-weight: 600;">Starting Liquid Reservoir Level</span>
+                            <span id="tankSliderVal" style="color: #34d399; font-weight: 800;">7,500 Liters</span>
+                        </div>
+                        <input type="range" id="tankLevelSlider" min="1500" max="10000" step="500" value="7500" style="width: 100%; accent-color: #34d399; cursor: pointer;">
+                    </div>
+                </div>
+
+                <!-- Column 3: Telemetry Outputs & Countdown -->
+                <div style="background: #080f1e; border: 1px solid #1a2744; border-radius: 14px; padding: 22px; display: flex; flex-direction: column; justify-content: space-between;">
+                    <div>
+                        <!-- Status Badge -->
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px;">
+                            <span style="font-size: 10px; text-transform: uppercase; font-weight: 800; color: #64748b; letter-spacing: 0.08em;">Depletion Window</span>
+                            <span id="burnBadge" style="padding: 3px 10px; border-radius: 999px; font-size: 10px; font-weight: 800; background: rgba(56, 189, 248, 0.15); color: #38bdf8; border: 1px solid rgba(56, 189, 248, 0.3);">
+                                SECURE RUNWAY
+                            </span>
+                        </div>
+
+                        <!-- Days of Runway -->
+                        <div style="margin-bottom: 16px;">
+                            <div style="display: flex; align-items: baseline; gap: 8px;">
+                                <span id="daysRemaining" style="font-size: 48px; font-weight: 900; color: #ffffff; line-height: 1;">3.8</span>
+                                <span style="font-size: 18px; color: #94a3b8; font-weight: 700;">Days</span>
+                            </div>
+                            <div style="font-size: 12px; color: #94a3b8; margin-top: 4px;">Estimated runway until emergency pipeline switchover</div>
+                        </div>
+
+                        <!-- Burn Rate Breakdown Grid -->
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 16px;">
+                            <div style="background: #0d172e; border: 1px solid #1d2c4d; padding: 10px; border-radius: 8px;">
+                                <div style="font-size: 10px; color: #64748b; text-transform: uppercase;">Total Burn Rate</div>
+                                <div id="totalFlowDisplay" style="font-size: 16px; font-weight: 800; color: #38bdf8; margin-top: 2px;">1,320 L/min</div>
+                            </div>
+                            <div style="background: #0d172e; border: 1px solid #1d2c4d; padding: 10px; border-radius: 8px;">
+                                <div style="font-size: 10px; color: #64748b; text-transform: uppercase;">Daily Gas Vol.</div>
+                                <div id="dailyGasDisplay" style="font-size: 16px; font-weight: 800; color: #fbbf24; margin-top: 2px;">1.90M Liters</div>
+                            </div>
+                        </div>
+
+                        <!-- Consumables Secondary Row -->
+                        <div style="background: #0d172e; border: 1px solid #1d2c4d; padding: 10px 12px; border-radius: 8px; font-size: 12px;">
+                            <div style="display: flex; justify-content: space-between; margin-bottom: 4px;">
+                                <span style="color: #94a3b8;">Ventilator Circuits Burn:</span>
+                                <strong id="circuitBurn" style="color: #f43f5e;">12 / Day</strong>
+                            </div>
+                            <div style="display: flex; justify-content: space-between;">
+                                <span style="color: #94a3b8;">Suction Canisters Est:</span>
+                                <strong id="canisterBurn" style="color: #cbd5e1;">36 / Day</strong>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Logistics Directive -->
+                    <div style="background: #040914; border: 1px solid #1a2744; padding: 12px; border-radius: 8px; margin-top: 14px;">
+                        <div style="font-size: 10px; text-transform: uppercase; font-weight: 800; color: #64748b; margin-bottom: 2px;">Procurement Action</div>
+                        <div id="procurementText" style="font-size: 11px; color: #cbd5e1; line-height: 1.4;">
+                            Cryogenic storage sufficient for 91 hours. Schedule primary tanker replenishment for Day 3.
+                        </div>
+                    </div>
+                </div>
+
+            </div>
         </div>
-
-        <!-- Bundled Script specifically for this section -->
-        <script>
-            (function() {
-                const emergencyData = [
-                    {
-                        title: "Mass Casualty Incident (MCI)",
-                        icon: "🚑",
-                        readiness: 92,
-                        actions: [
-                            "Activate 15 triage overflow beds",
-                            "Alert on-call trauma surgical teams",
-                            "Divert non-critical inbound EMS"
-                        ]
-                    },
-                    {
-                        title: "Infectious Disease Surge",
-                        icon: "🦠",
-                        readiness: 78,
-                        actions: [
-                            "Convert Ward B to negative pressure",
-                            "Audit PPE stockpile (N95, gowns)",
-                            "Deploy isolation nursing ratios"
-                        ]
-                    },
-                    {
-                        title: "Severe Weather / Blackout",
-                        icon: "⚡",
-                        readiness: 85,
-                        actions: [
-                            "Verify backup generator fuel reserves",
-                            "Prepare early discharge for stable patients",
-                            "Lock down non-essential facility access"
-                        ]
-                    }
-                ];
-
-                const container = document.getElementById('emergency-container');
-                if (!container) return;
-
-                emergencyData.forEach(scenario => {
-                    // Turn the progress bar green if readiness is high, orange if it needs work
-                    const readinessColor = scenario.readiness >= 80 ? '#38a169' : '#dd6b20';
-                    
-                    const card = document.createElement('div');
-                    card.className = 'emergency-card';
-                    
-                    // Create the HTML for the list of actions
-                    let actionsHTML = '';
-                    scenario.actions.forEach(action => {
-                        actionsHTML += `<li><span class="check">✓</span> ${action}</li>`;
-                    });
-
-                    card.innerHTML = `
-                        <div class="emergency-header">
-                            <div class="emergency-icon">${scenario.icon}</div>
-                            <h3 class="emergency-title">${scenario.title}</h3>
-                        </div>
-                        <div class="readiness-section">
-                            <div class="readiness-label">
-                                <span>System Readiness</span>
-                                <span style="font-weight: bold; color: ${readinessColor};">${scenario.readiness}%</span>
-                            </div>
-                            <div class="readiness-bar-bg">
-                                <div class="readiness-bar-fill" style="width: ${scenario.readiness}%; background: ${readinessColor};"></div>
-                            </div>
-                        </div>
-                        <div class="emergency-actions">
-                            <strong>Automated Protocol Steps:</strong>
-                            <ul>
-                                ${actionsHTML}
-                            </ul>
-                        </div>
-                        <button class="btn-outline" style="width: 100%; margin-top: 24px; border: 1px solid #cbd5e1; padding: 10px;">Run Simulation</button>
-                    `;
-                    container.appendChild(card);
-                });
-            })();
-        </script>
     </section>
 
+    <!-- Logistics Engine Script -->
+    <script>
+        (function initOxygenBurnEstimator() {
+            const ventCount = document.getElementById('ventCount');
+            const hfncCount = document.getElementById('hfncCount');
+            const wardO2Count = document.getElementById('wardO2Count');
+            const tankLevelSlider = document.getElementById('tankLevelSlider');
+
+            const ventVal = document.getElementById('ventVal');
+            const hfncVal = document.getElementById('hfncVal');
+            const wardO2Val = document.getElementById('wardO2Val');
+            const tankSliderVal = document.getElementById('tankSliderVal');
+
+            const tankFluid = document.getElementById('tankFluid');
+            const tankPctLabel = document.getElementById('tankPctLabel');
+            const daysRemaining = document.getElementById('daysRemaining');
+            const burnBadge = document.getElementById('burnBadge');
+            const totalFlowDisplay = document.getElementById('totalFlowDisplay');
+            const dailyGasDisplay = document.getElementById('dailyGasDisplay');
+            const circuitBurn = document.getElementById('circuitBurn');
+            const canisterBurn = document.getElementById('canisterBurn');
+            const procurementText = document.getElementById('procurementText');
+
+            function calculateBurn() {
+                const vents = parseInt(ventCount.value, 10);
+                const hfnc = parseInt(hfncCount.value, 10);
+                const ward = parseInt(wardO2Count.value, 10);
+                const liquidLiters = parseInt(tankLevelSlider.value, 10);
+
+                // Update input text indicators
+                ventVal.textContent = vents + ' pts (35 L/m)';
+                hfncVal.textContent = hfnc + ' pts (45 L/m)';
+                wardO2Val.textContent = ward + ' pts (4 L/m)';
+                tankSliderVal.textContent = liquidLiters.toLocaleString() + ' Liters';
+
+                // Physiological Hospital Gas Physics:
+                // 1 Liter of Liquid O2 expands to ~860 Liters of gaseous medical oxygen at 1 atm
+                const totalGaseousOxygen = liquidLiters * 860;
+
+                // Flow rates (Litres/minute)
+                // Mechanical Vent ~ 35 L/min (FIO2 60-100% with bias flow)
+                // HFNC ~ 45 L/min
+                // Low-flow Ward ~ 4 L/min
+                const ventFlow = vents * 35;
+                const hfncFlow = hfnc * 45;
+                const wardFlow = ward * 4;
+                const totalFlowPerMinute = ventFlow + hfncFlow + wardFlow;
+
+                // Total daily gas volume in liters (flow * 60 min * 24 h)
+                const dailyGasBurn = totalFlowPerMinute * 1440;
+
+                // Days of supply
+                const days = (dailyGasBurn > 0) ? (totalGaseousOxygen / dailyGasBurn) : 99;
+                const formattedDays = days.toFixed(1);
+
+                // Update Tank Visualizer Fill (Max capacity: 10,000 L)
+                const tankPct = Math.round((liquidLiters / 10000) * 100);
+                tankFluid.style.height = tankPct + '%';
+                tankPctLabel.textContent = tankPct + '%';
+
+                // Update Telemetry Display
+                daysRemaining.textContent = formattedDays;
+                totalFlowDisplay.textContent = totalFlowPerMinute.toLocaleString() + ' L/min';
+                dailyGasDisplay.textContent = (dailyGasBurn / 1000000).toFixed(2) + 'M Liters';
+                circuitBurn.textContent = vents + ' / Day';
+                canisterBurn.textContent = (vents * 3) + ' / Day';
+
+                // Status Alert Thresholds
+                if (days < 2.0) {
+                    burnBadge.textContent = 'CRITICAL O₂ EXHAUSTION';
+                    burnBadge.style.background = 'rgba(244, 63, 94, 0.2)';
+                    burnBadge.style.color = '#f43f5e';
+                    burnBadge.style.borderColor = 'rgba(244, 63, 94, 0.4)';
+                    tankFluid.style.background = 'linear-gradient(180deg, #f43f5e 0%, #be123c 100%)';
+                    procurementText.textContent = `CRITICAL ALERT: Reservoir drops below 48-hour safety margin in ${formattedDays} days. Request emergency cryogenic bulk tanker dispatch immediately.`;
+                } else if (days < 4.0) {
+                    burnBadge.textContent = 'ELEVATED CONSUMPTION';
+                    burnBadge.style.background = 'rgba(245, 158, 11, 0.2)';
+                    burnBadge.style.color = '#fbbf24';
+                    burnBadge.style.borderColor = 'rgba(245, 158, 11, 0.4)';
+                    tankFluid.style.background = 'linear-gradient(180deg, #fbbf24 0%, #b45309 100%)';
+                    procurementText.textContent = `High surge burn rate detected. Current liquid oxygen provides ${formattedDays} days runway. Advance routine delivery schedule by 48 hours.`;
+                } else {
+                    burnBadge.textContent = 'SECURE RUNWAY';
+                    burnBadge.style.background = 'rgba(56, 189, 248, 0.15)';
+                    burnBadge.style.color = '#38bdf8';
+                    burnBadge.style.borderColor = 'rgba(56, 189, 248, 0.3)';
+                    tankFluid.style.background = 'linear-gradient(180deg, #38bdf8 0%, #0284c7 100%)';
+                    procurementText.textContent = `Supply pipeline stable. Estimated reserve runway: ${formattedDays} days (${Math.round(days * 24)} operational hours).`;
+                }
+            }
+
+            // Bind Event Listeners
+            ventCount.addEventListener('input', calculateBurn);
+            hfncCount.addEventListener('input', calculateBurn);
+            wardO2Count.addEventListener('input', calculateBurn);
+            tankLevelSlider.addEventListener('input', calculateBurn);
+
+            // Initial calculation on load
+            calculateBurn();
+        })();
+    </script>
    <section class="section section-alt" id="security-section">
         <div class="section-content" style="max-width: 1000px; margin: 0 auto; width: 100%;">
             

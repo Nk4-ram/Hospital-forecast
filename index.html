@@ -1523,16 +1523,233 @@
         </div>
     </section>
 
-   <section class="section section-alt" id="department-section">
-        <div class="section-content" style="max-width: 1000px; margin: 0 auto; width: 100%;">
-            <h2 style="color: #131b2e; margin-bottom: 8px;">Department Capacity Forecast</h2>
-            <p style="margin-bottom: 32px; color: #3f4850;">Real-time bed occupancy and staffing requirements by department.</p>
+  <!-- 6. Emergency Department (ER) Wait Time Estimator -->
+    <section id="er-wait-estimator" class="section section-alt" style="padding: 48px 24px; min-height: auto;">
+        <div style="width: 100%; max-width: 1100px; margin: 0 auto; background: #0f172a; border: 1px solid #1e293b; border-radius: 20px; padding: 32px; color: #f8fafc; box-shadow: 0 16px 36px rgba(0, 0, 0, 0.25);">
             
-            <!-- JavaScript will inject the department cards here -->
-            <div id="departments-container" class="dept-grid"></div>
+            <!-- Header -->
+            <div style="margin-bottom: 24px; text-align: left;">
+                <span style="font-size: 11px; text-transform: uppercase; letter-spacing: 0.08em; font-weight: 700; color: #38bdf8; background: rgba(56, 189, 248, 0.12); border: 1px solid rgba(56, 189, 248, 0.25); padding: 4px 10px; border-radius: 999px;">
+                    Department Intelligence • ER Operations
+                </span>
+                <h2 style="font-size: 26px; font-weight: 800; margin: 12px 0 6px 0; color: #ffffff;">6. Real-Time ER Wait Time & Diversion Engine</h2>
+                <p style="font-size: 14px; color: #94a3b8; margin: 0;">Calculate estimated door-to-doctor wait times and live EMS ambulance diversion status based on triage queue depth, physician coverage, and inpatient bed block.</p>
+            </div>
+
+            <!-- Two-Column Interactive Grid -->
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 24px; text-align: left;">
+                
+                <!-- Left: Control Sliders -->
+                <div style="background: rgba(15, 23, 42, 0.9); border: 1px solid #334155; padding: 22px; border-radius: 12px;">
+                    <h3 style="font-size: 14px; margin: 0 0 18px 0; color: #cbd5e1; text-transform: uppercase; letter-spacing: 0.05em;">Live ER Queue Parameters</h3>
+
+                    <!-- Waiting Room Queue -->
+                    <div style="margin-bottom: 16px;">
+                        <div style="display: flex; justify-content: space-between; font-size: 12px; font-weight: 600; margin-bottom: 4px;">
+                            <span style="color: #94a3b8;">Patients in Waiting Room</span>
+                            <span id="erQueueVal" style="color: #38bdf8; font-weight: 700;">28 patients</span>
+                        </div>
+                        <input type="range" id="erQueue" min="5" max="65" value="28" style="width: 100%; accent-color: #38bdf8; cursor: pointer;">
+                    </div>
+
+                    <!-- On-Duty ER Physicians -->
+                    <div style="margin-bottom: 16px;">
+                        <div style="display: flex; justify-content: space-between; font-size: 12px; font-weight: 600; margin-bottom: 4px;">
+                            <span style="color: #94a3b8;">On-Duty Attending Physicians</span>
+                            <span id="erDoctorsVal" style="color: #34d399; font-weight: 700;">3 Doctors</span>
+                        </div>
+                        <input type="range" id="erDoctors" min="1" max="6" value="3" style="width: 100%; accent-color: #34d399; cursor: pointer;">
+                    </div>
+
+                    <!-- Boarding Beds (Inpatient Block) -->
+                    <div style="margin-bottom: 16px;">
+                        <div style="display: flex; justify-content: space-between; font-size: 12px; font-weight: 600; margin-bottom: 4px;">
+                            <span style="color: #94a3b8;">Boarding Bed Block (Beds Occupied by Inpatients)</span>
+                            <span id="erBoardingVal" style="color: #f59e0b; font-weight: 700;">8 / 25 Beds</span>
+                        </div>
+                        <input type="range" id="erBoarding" min="0" max="20" value="8" style="width: 100%; accent-color: #f59e0b; cursor: pointer;">
+                    </div>
+
+                    <!-- High-Acuity Trauma Mix -->
+                    <div style="margin-bottom: 16px;">
+                        <div style="display: flex; justify-content: space-between; font-size: 12px; font-weight: 600; margin-bottom: 4px;">
+                            <span style="color: #94a3b8;">High-Acuity Mix (ESI 1 & 2 Resuscitations)</span>
+                            <span id="erAcuityVal" style="color: #ec4899; font-weight: 700;">25%</span>
+                        </div>
+                        <input type="range" id="erAcuity" min="5" max="60" step="5" value="25" style="width: 100%; accent-color: #ec4899; cursor: pointer;">
+                    </div>
+
+                    <!-- Inbound Ambulances -->
+                    <div style="margin-bottom: 8px;">
+                        <div style="display: flex; justify-content: space-between; font-size: 12px; font-weight: 600; margin-bottom: 4px;">
+                            <span style="color: #94a3b8;">Inbound EMS Ambulances (Next 30 min)</span>
+                            <span id="erEmsVal" style="color: #a78bfa; font-weight: 700;">4 Inbound</span>
+                        </div>
+                        <input type="range" id="erEms" min="0" max="10" value="4" style="width: 100%; accent-color: #a78bfa; cursor: pointer;">
+                    </div>
+                </div>
+
+                <!-- Right: Dynamic Operational Readout -->
+                <div style="background: #090e17; border: 1px solid #1e293b; padding: 22px; border-radius: 12px; display: flex; flex-direction: column; justify-content: space-between;">
+                    <div>
+                        <!-- Diversion Status Badge -->
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+                            <span style="font-size: 11px; text-transform: uppercase; font-weight: 700; color: #64748b;">EMS Intake Status</span>
+                            <span id="diversionBadge" style="padding: 4px 12px; border-radius: 999px; font-size: 11px; font-weight: 700; background: rgba(245, 158, 11, 0.15); color: #fbbf24; border: 1px solid rgba(245, 158, 11, 0.3);">
+                                SURGE WARNING
+                            </span>
+                        </div>
+
+                        <!-- Wait Time Counter -->
+                        <div style="margin-bottom: 20px;">
+                            <div style="display: flex; align-items: baseline; gap: 8px;">
+                                <span id="waitTimeDisplay" style="font-size: 48px; font-weight: 900; color: #ffffff; line-height: 1;">68</span>
+                                <span style="font-size: 18px; color: #94a3b8; font-weight: 600;">minutes</span>
+                            </div>
+                            <div style="font-size: 13px; color: #94a3b8; margin-top: 4px;">Estimated door-to-provider consultation time</div>
+                        </div>
+
+                        <!-- Capacity & Throughput Gauge -->
+                        <div style="margin-bottom: 20px;">
+                            <div style="display: flex; justify-content: space-between; font-size: 12px; margin-bottom: 6px;">
+                                <span style="color: #94a3b8;">ER Treatment Bay Saturation</span>
+                                <span id="saturationPercent" style="font-weight: 700; color: #ffffff;">78%</span>
+                            </div>
+                            <div style="height: 8px; width: 100%; background: #1e293b; border-radius: 999px; overflow: hidden;">
+                                <div id="saturationFill" style="height: 100%; width: 78%; background: #f59e0b; transition: width 0.3s ease, background 0.3s ease;"></div>
+                            </div>
+                        </div>
+
+                        <!-- Key Metrics Grid -->
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 18px;">
+                            <div style="background: #1e293b; padding: 10px 12px; border-radius: 8px; border: 1px solid #334155;">
+                                <div style="font-size: 11px; color: #94a3b8;">Processing Velocity</div>
+                                <div id="velocityDisplay" style="font-size: 16px; font-weight: 700; color: #38bdf8; margin-top: 2px;">5.2 pts/hr</div>
+                            </div>
+                            <div style="background: #1e293b; padding: 10px 12px; border-radius: 8px; border: 1px solid #334155;">
+                                <div style="font-size: 11px; color: #94a3b8;">Bed Lockout Impact</div>
+                                <div id="lockoutDisplay" style="font-size: 16px; font-weight: 700; color: #f87171; margin-top: 2px;">-24% Speed</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Operational Recommendation -->
+                    <div style="background: rgba(15, 23, 42, 0.8); border: 1px solid #334155; padding: 12px; border-radius: 8px;">
+                        <div style="font-size: 11px; text-transform: uppercase; font-weight: 700; color: #64748b; margin-bottom: 4px;">Recommended Action</div>
+                        <div id="erActionText" style="font-size: 12px; color: #cbd5e1; line-height: 1.4;">
+                            Deploy fast-track triage nurse to clear minor ESI 4/5 cases and notify hospital bed manager to expedite inpatient discharges.
+                        </div>
+                    </div>
+                </div>
+
+            </div>
         </div>
     </section>
 
+    <!-- ER Estimator Engine Script -->
+    <script>
+        (function initEREstimator() {
+            const erQueue = document.getElementById('erQueue');
+            const erDoctors = document.getElementById('erDoctors');
+            const erBoarding = document.getElementById('erBoarding');
+            const erAcuity = document.getElementById('erAcuity');
+            const erEms = document.getElementById('erEms');
+
+            const erQueueVal = document.getElementById('erQueueVal');
+            const erDoctorsVal = document.getElementById('erDoctorsVal');
+            const erBoardingVal = document.getElementById('erBoardingVal');
+            const erAcuityVal = document.getElementById('erAcuityVal');
+            const erEmsVal = document.getElementById('erEmsVal');
+
+            const waitTimeDisplay = document.getElementById('waitTimeDisplay');
+            const diversionBadge = document.getElementById('diversionBadge');
+            const saturationPercent = document.getElementById('saturationPercent');
+            const saturationFill = document.getElementById('saturationFill');
+            const velocityDisplay = document.getElementById('velocityDisplay');
+            const lockoutDisplay = document.getElementById('lockoutDisplay');
+            const erActionText = document.getElementById('erActionText');
+
+            function calculateERMetrics() {
+                const queue = parseInt(erQueue.value, 10);
+                const doctors = parseInt(erDoctors.value, 10);
+                const boardingBeds = parseInt(erBoarding.value, 10);
+                const acuityPct = parseInt(erAcuity.value, 10);
+                const inboundEms = parseInt(erEms.value, 10);
+
+                // Update input text indicators
+                erQueueVal.textContent = queue + ' patients';
+                erDoctorsVal.textContent = doctors + (doctors === 1 ? ' Doctor' : ' Doctors');
+                erBoardingVal.textContent = boardingBeds + ' / 25 Beds';
+                erAcuityVal.textContent = acuityPct + '%';
+                erEmsVal.textContent = inboundEms + ' Inbound';
+
+                // Core Emergency Department Flow Calculations
+                // 1. Base physician throughput: ~2.3 patients per doctor per hour
+                const baseVelocity = doctors * 2.3;
+
+                // 2. Acuity reduction: High acuity resuscitations consume disproportionate physician hours
+                const acuityDrag = 1 - (acuityPct / 100) * 0.45;
+
+                // 3. Boarding bed block: Blocked beds throttle doctor examination throughput
+                const bedPenalty = Math.min(0.65, (boardingBeds / 25) * 0.8);
+                const bedCapacityFactor = 1 - bedPenalty;
+
+                // 4. Effective processing speed (patients / hour)
+                const effectiveVelocity = Math.max(1.2, baseVelocity * acuityDrag * bedCapacityFactor);
+
+                // 5. Total pending demand load (waiting room + inbound ambulances receiving immediate priority)
+                const totalPendingDemand = queue + (inboundEms * 1.5);
+
+                // 6. Door-to-Doctor Wait Time in minutes
+                const rawWaitTime = Math.round((totalPendingDemand / effectiveVelocity) * 60);
+                const waitTime = Math.max(12, rawWaitTime);
+
+                // 7. Saturation index (0% to 100%)
+                const saturation = Math.min(100, Math.round(((queue + boardingBeds * 1.2) / 45) * 100));
+
+                // Update UI Display Numbers
+                waitTimeDisplay.textContent = waitTime;
+                velocityDisplay.textContent = effectiveVelocity.toFixed(1) + ' pts/hr';
+                lockoutDisplay.textContent = '-' + Math.round(bedPenalty * 100) + '% Speed';
+                saturationPercent.textContent = saturation + '%';
+                saturationFill.style.width = saturation + '%';
+
+                // Diversion Status, Colors, and Clinical Recommendation
+                if (waitTime >= 95 || boardingBeds >= 14 || saturation >= 90) {
+                    diversionBadge.textContent = 'AMBULANCE DIVERSION';
+                    diversionBadge.style.background = 'rgba(244, 63, 94, 0.15)';
+                    diversionBadge.style.color = '#f43f5e';
+                    diversionBadge.style.borderColor = 'rgba(244, 63, 94, 0.3)';
+                    saturationFill.style.background = '#f43f5e';
+                    erActionText.textContent = 'CRITICAL: Trigger regional ambulance diversion for non-trauma cases. Expedite discharge lounge transfers to unlock boarded treatment bays.';
+                } else if (waitTime >= 55 || boardingBeds >= 8 || saturation >= 70) {
+                    diversionBadge.textContent = 'SURGE WARNING';
+                    diversionBadge.style.background = 'rgba(245, 158, 11, 0.15)';
+                    diversionBadge.style.color = '#fbbf24';
+                    diversionBadge.style.borderColor = 'rgba(245, 158, 11, 0.3)';
+                    saturationFill.style.background = '#fbbf24';
+                    erActionText.textContent = 'Deploy fast-track triage nurse to clear minor ESI 4/5 cases and notify hospital bed manager to expedite inpatient admissions.';
+                } else {
+                    diversionBadge.textContent = 'NORMAL INTAKE';
+                    diversionBadge.style.background = 'rgba(52, 211, 153, 0.15)';
+                    diversionBadge.style.color = '#34d399';
+                    diversionBadge.style.borderColor = 'rgba(52, 211, 153, 0.3)';
+                    saturationFill.style.background = '#34d399';
+                    erActionText.textContent = 'ER flow is within optimal operational tolerance. Routine triage and bed turnaround workflows maintained.';
+                }
+            }
+
+            // Event Listeners
+            erQueue.addEventListener('input', calculateERMetrics);
+            erDoctors.addEventListener('input', calculateERMetrics);
+            erBoarding.addEventListener('input', calculateERMetrics);
+            erAcuity.addEventListener('input', calculateERMetrics);
+            erEms.addEventListener('input', calculateERMetrics);
+
+            // Initial calculation on load
+            calculateERMetrics();
+        })();
+    </script>
   <section class="section" id="resource-section">
         <div class="section-content" style="max-width: 1000px; margin: 0 auto; width: 100%;">
             <h2 style="color: #131b2e; margin-bottom: 8px;">Resource Planning & Staffing</h2>

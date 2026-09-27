@@ -1370,45 +1370,254 @@
         </div>
     </section>
 
-    <section class="section section-alt" id="how-it-works-section">
-        <div class="section-content" style="max-width: 1000px; margin: 0 auto; width: 100%;">
+   <!-- 4. Outpatient Clinic & Diagnostic Imaging No-Show Forecaster -->
+    <section id="noshow-predictor-section" class="section section-alt" style="padding: 56px 20px; min-height: auto; background-color: #0b0f19;">
+        <div style="width: 100%; max-width: 1120px; margin: 0 auto; background: #121829; border: 1px solid #232d4b; border-radius: 20px; padding: 32px; color: #f1f5f9; box-shadow: 0 20px 48px rgba(0, 0, 0, 0.45); font-family: system-ui, -apple-system, sans-serif;">
             
-            <div style="text-align: center; margin-bottom: 64px;">
-                <h2 style="color: #131b2e; font-size: 32px; margin-bottom: 16px; letter-spacing: -0.5px;">How It Works</h2>
-                <p style="color: #3f4850; max-width: 600px; margin: 0 auto; font-size: 16px;">From raw historical data to proactive resource allocation in three simple steps.</p>
-            </div>
-
-            <div class="workflow-container">
-                <!-- Step 1 -->
-                <div class="workflow-step">
-                    <div class="workflow-icon">1</div>
-                    <h3 class="workflow-title">Collect</h3>
-                    <p class="workflow-desc">Securely integrate historical admission data and real-time electronic health record (EHR) census feeds.</p>
+            <!-- Console Topbar -->
+            <div style="display: flex; flex-wrap: wrap; justify-content: space-between; align-items: flex-start; gap: 16px; border-bottom: 1px solid #232d4b; padding-bottom: 20px; margin-bottom: 26px;">
+                <div>
+                    <div style="display: flex; align-items: center; gap: 8px;">
+                        <span style="display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: #a855f7; box-shadow: 0 0 10px #a855f7;"></span>
+                        <span style="font-size: 11px; text-transform: uppercase; letter-spacing: 0.12em; font-weight: 800; color: #c084fc;">Intake Optimization • Outpatient Logistics</span>
+                    </div>
+                    <h2 style="font-size: 26px; font-weight: 800; margin: 8px 0 4px 0; color: #ffffff;">Imaging & Specialist Clinic No-Show Predictor</h2>
+                    <p style="font-size: 14px; color: #94a3b8; margin: 0;">Predict unfulfilled appointment probabilities for high-value MRI/CT suites and specialty clinics to calculate safe overbooking quotas.</p>
                 </div>
-                
-                <!-- Connector Line -->
-                <div class="workflow-connector"></div>
-
-                <!-- Step 2 -->
-                <div class="workflow-step">
-                    <div class="workflow-icon">2</div>
-                    <h3 class="workflow-title">Analyze</h3>
-                    <p class="workflow-desc">Our AI engine processes seasonality, local health trends, and department-specific demand cycles.</p>
-                </div>
-                
-                <!-- Connector Line -->
-                <div class="workflow-connector"></div>
-
-                <!-- Step 3 -->
-                <div class="workflow-step">
-                    <div class="workflow-icon">3</div>
-                    <h3 class="workflow-title">Forecast</h3>
-                    <p class="workflow-desc">Receive 14-day capacity predictions, surge alerts, and automated staffing recommendations.</p>
+                <div style="background: #1a2238; border: 1px solid #2e3b61; padding: 8px 14px; border-radius: 10px; font-size: 12px; color: #cbd5e1;">
+                    <span style="color: #94a3b8;">Asset Protected:</span> <strong style="color: #a855f7;">$1,200/hr MRI Scanner Suite</strong>
                 </div>
             </div>
 
+            <!-- Two-Column Diagnostic Console Grid -->
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 26px; text-align: left;">
+                
+                <!-- Left Panel: Appointment Risk Inputs -->
+                <div style="background: #0d1220; border: 1px solid #1e2842; padding: 22px; border-radius: 14px;">
+                    <h3 style="font-size: 13px; text-transform: uppercase; letter-spacing: 0.08em; color: #cbd5e1; margin: 0 0 18px 0; font-weight: 800;">Appointment & Patient Parameters</h3>
+
+                    <!-- Diagnostic Service Type -->
+                    <div style="margin-bottom: 16px;">
+                        <label style="display: block; font-size: 12px; font-weight: 700; color: #94a3b8; margin-bottom: 6px;">Service / Department Modality</label>
+                        <select id="nsModality" style="width: 100%; background: #172036; color: #f8fafc; border: 1px solid #2e3c63; padding: 9px 12px; border-radius: 8px; font-size: 13px; outline: none;">
+                            <option value="1.0">Cardiology / Oncology Specialist Follow-up (High Adherence)</option>
+                            <option value="1.25" selected>Advanced Imaging (3T MRI / PET-CT Scan)</option>
+                            <option value="1.55">General Outpatient Orthopedic / Physical Therapy</option>
+                            <option value="1.75">Routine Routine Primary Care Screening</option>
+                        </select>
+                    </div>
+
+                    <!-- Lead Time in Days -->
+                    <div style="margin-bottom: 16px;">
+                        <div style="display: flex; justify-content: space-between; font-size: 12px; font-weight: 700; margin-bottom: 4px;">
+                            <span style="color: #94a3b8;">Booking Lead Time (Days from scheduling to scan)</span>
+                            <span id="leadTimeVal" style="color: #c084fc;">24 Days Ahead</span>
+                        </div>
+                        <input type="range" id="nsLeadTime" min="1" max="60" value="24" style="width: 100%; accent-color: #a855f7; cursor: pointer;">
+                    </div>
+
+                    <!-- Prior No-Show History -->
+                    <div style="margin-bottom: 16px;">
+                        <div style="display: flex; justify-content: space-between; font-size: 12px; font-weight: 700; margin-bottom: 4px;">
+                            <span style="color: #94a3b8;">Patient Prior Cancellation/No-Show Count</span>
+                            <span id="priorNoShowVal" style="color: #fb7185;">1 Previous Missed</span>
+                        </div>
+                        <input type="range" id="nsPrior" min="0" max="4" value="1" style="width: 100%; accent-color: #fb7185; cursor: pointer;">
+                    </div>
+
+                    <!-- Appointment Time Window -->
+                    <div style="margin-bottom: 16px;">
+                        <label style="display: block; font-size: 12px; font-weight: 700; color: #94a3b8; margin-bottom: 6px;">Scheduled Time Window</label>
+                        <select id="nsSlot" style="width: 100%; background: #172036; color: #f8fafc; border: 1px solid #2e3c63; padding: 9px 12px; border-radius: 8px; font-size: 13px; outline: none;">
+                            <option value="1.35">Early Morning (07:30 – 08:30) • High Traffic Friction</option>
+                            <option value="1.0" selected>Mid-Day Standard (10:00 – 14:00)</option>
+                            <option value="1.2">Late Afternoon (16:30 – 18:00) • End-of-Day Attrition</option>
+                        </select>
+                    </div>
+
+                    <!-- Environmental Friction Modifiers -->
+                    <div style="border-top: 1px dashed #232d4b; padding-top: 14px; margin-top: 14px;">
+                        <span style="font-size: 11px; text-transform: uppercase; font-weight: 800; color: #64748b; display: block; margin-bottom: 10px;">Friction Factors</span>
+                        <div style="display: flex; flex-direction: column; gap: 8px;">
+                            <label style="display: flex; align-items: center; gap: 8px; font-size: 13px; color: #cbd5e1; cursor: pointer;">
+                                <input type="checkbox" id="modWeather" style="width: 16px; height: 16px; accent-color: #a855f7; cursor: pointer;">
+                                <span>Severe Weather Alert Forecasted (Heavy Rain/Snow)</span>
+                            </label>
+                            <label style="display: flex; align-items: center; gap: 8px; font-size: 13px; color: #cbd5e1; cursor: pointer;">
+                                <input type="checkbox" id="modTransit" checked style="width: 16px; height: 16px; accent-color: #a855f7; cursor: pointer;">
+                                <span>Transit Dependent (> 15 Miles Distance from Hospital)</span>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Right Panel: Predictive Output & Dynamic Slot Balancing -->
+                <div style="background: #090d17; border: 1px solid #1e2842; border-radius: 14px; padding: 22px; display: flex; flex-direction: column; justify-content: space-between;">
+                    <div>
+                        <!-- Risk Badge Header -->
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+                            <span style="font-size: 11px; text-transform: uppercase; font-weight: 800; color: #64748b;">No-Show Vulnerability</span>
+                            <span id="noShowBadge" style="padding: 4px 12px; border-radius: 999px; font-size: 11px; font-weight: 800; background: rgba(245, 158, 11, 0.15); color: #fbbf24; border: 1px solid rgba(245, 158, 11, 0.3);">
+                                MODERATE NO-SHOW RISK
+                            </span>
+                        </div>
+
+                        <!-- Hero Percentage -->
+                        <div style="margin-bottom: 20px;">
+                            <div style="display: flex; align-items: baseline; gap: 8px;">
+                                <span id="noShowPctDisplay" style="font-size: 48px; font-weight: 900; color: #ffffff; line-height: 1;">31.8%</span>
+                                <span style="font-size: 16px; color: #94a3b8; font-weight: 600;">probability</span>
+                            </div>
+                            <div style="font-size: 13px; color: #94a3b8; margin-top: 4px;">Chance of unattended appointment slot</div>
+                        </div>
+
+                        <!-- Slot Idle Risk Bar -->
+                        <div style="margin-bottom: 20px;">
+                            <div style="display: flex; justify-content: space-between; font-size: 12px; margin-bottom: 6px;">
+                                <span style="color: #94a3b8;">Scanner Idle Probability</span>
+                                <span id="idleRiskLabel" style="font-weight: 700; color: #fbbf24;">Moderate Slot Loss</span>
+                            </div>
+                            <div style="height: 8px; width: 100%; background: #1a2238; border-radius: 999px; overflow: hidden;">
+                                <div id="noShowFill" style="height: 100%; width: 32%; background: #fbbf24; transition: width 0.3s ease, background 0.3s ease;"></div>
+                            </div>
+                        </div>
+
+                        <!-- Operational Impact Metrics -->
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 16px;">
+                            <div style="background: #141c30; border: 1px solid #243254; padding: 10px 12px; border-radius: 8px;">
+                                <div style="font-size: 11px; color: #94a3b8;">Potential Idle Loss</div>
+                                <div id="lostRevenueDisplay" style="font-size: 16px; font-weight: 800; color: #fb7185; margin-top: 2px;">$380 Est.</div>
+                            </div>
+                            <div style="background: #141c30; border: 1px solid #243254; padding: 10px 12px; border-radius: 8px;">
+                                <div style="font-size: 11px; color: #94a3b8;">Overbooking Rec.</div>
+                                <div id="overbookRecDisplay" style="font-size: 15px; font-weight: 800; color: #c084fc; margin-top: 2px;">Standby Buffer</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Automated Scheduling Policy Recommendation -->
+                    <div style="background: #0f1629; border: 1px solid #222e4d; padding: 14px; border-radius: 10px;">
+                        <div style="font-size: 10px; text-transform: uppercase; font-weight: 800; color: #64748b; margin-bottom: 4px;">Smart Scheduling Directive</div>
+                        <div id="noShowDirective" style="font-size: 12px; color: #cbd5e1; line-height: 1.45;">
+                            Dispatch 48-hour two-way confirmation SMS with transit directions. Place 1 rapid-recall standby patient on telephone hold.
+                        </div>
+                    </div>
+                </div>
+
+            </div>
         </div>
     </section>
+
+    <!-- Outpatient No-Show Engine Script -->
+    <script>
+        (function initNoShowPredictor() {
+            const nsModality = document.getElementById('nsModality');
+            const nsLeadTime = document.getElementById('nsLeadTime');
+            const nsPrior = document.getElementById('nsPrior');
+            const nsSlot = document.getElementById('nsSlot');
+            const modWeather = document.getElementById('modWeather');
+            const modTransit = document.getElementById('modTransit');
+
+            const leadTimeVal = document.getElementById('leadTimeVal');
+            const priorNoShowVal = document.getElementById('priorNoShowVal');
+            const noShowBadge = document.getElementById('noShowBadge');
+            const noShowPctDisplay = document.getElementById('noShowPctDisplay');
+            const idleRiskLabel = document.getElementById('idleRiskLabel');
+            const noShowFill = document.getElementById('noShowFill');
+            const lostRevenueDisplay = document.getElementById('lostRevenueDisplay');
+            const overbookRecDisplay = document.getElementById('overbookRecDisplay');
+            const noShowDirective = document.getElementById('noShowDirective');
+
+            function calculateNoShow() {
+                const modalityMultiplier = parseFloat(nsModality.value);
+                const leadDays = parseInt(nsLeadTime.value, 10);
+                const priorMissed = parseInt(nsPrior.value, 10);
+                const slotMultiplier = parseFloat(nsSlot.value);
+                const badWeather = modWeather.checked;
+                const longTransit = modTransit.checked;
+
+                // Update text indicators
+                leadTimeVal.textContent = leadDays + (leadDays === 1 ? ' Day Ahead' : ' Days Ahead');
+                priorNoShowVal.textContent = priorMissed + (priorMissed === 1 ? ' Previous Missed' : ' Previous Missed');
+
+                // Clinical Outpatient Logistics Modeling:
+                // 1. Base No-Show baseline ~ 6%
+                const baseProb = 0.06;
+
+                // 2. Lead Time decay: appointments booked far in advance have higher attrition
+                const leadFactor = (leadDays / 60) * 0.16;
+
+                // 3. Prior missed behavior (strongest predictive signal)
+                const priorFactor = priorMissed * 0.085;
+
+                // 4. External environmental friction
+                const weatherFactor = badWeather ? 0.09 : 0.0;
+                const transitFactor = longTransit ? 0.05 : 0.0;
+
+                // Composite probability through logistic transformation
+                const rawProb = (baseProb + leadFactor + priorFactor + weatherFactor + transitFactor) 
+                                * modalityMultiplier 
+                                * slotMultiplier;
+
+                const prob = Math.min(85, Math.max(4, Math.round(rawProb * 100 * 10) / 10));
+
+                // Update Outputs
+                noShowPctDisplay.textContent = prob.toFixed(1) + '%';
+                noShowFill.style.width = prob + '%';
+
+                // Financial slot risk (based on $1,200/hr suite amortized revenue)
+                const estimatedLoss = Math.round((prob / 100) * 1200);
+                lostRevenueDisplay.textContent = '$' + estimatedLoss + ' Est.';
+
+                // Status Tiers and Actions
+                if (prob >= 40) {
+                    noShowBadge.textContent = 'HIGH NO-SHOW RISK';
+                    noShowBadge.style.background = 'rgba(244, 63, 94, 0.18)';
+                    noShowBadge.style.color = '#fb7185';
+                    noShowBadge.style.borderColor = 'rgba(244, 63, 94, 0.35)';
+                    noShowFill.style.background = '#fb7185';
+                    idleRiskLabel.textContent = 'High Equipment Idle Risk';
+                    idleRiskLabel.style.color = '#fb7185';
+                    overbookRecDisplay.textContent = 'Double-Book Slot';
+                    overbookRecDisplay.style.color = '#fb7185';
+                    noShowDirective.textContent = 'OVERBOOKING RECOMMENDED: Double-book this time slot with a flexible follow-up or require pre-appointment phone check-in 24 hours prior.';
+                } else if (prob >= 20) {
+                    noShowBadge.textContent = 'MODERATE NO-SHOW RISK';
+                    noShowBadge.style.background = 'rgba(245, 158, 11, 0.18)';
+                    noShowBadge.style.color = '#fbbf24';
+                    noShowBadge.style.borderColor = 'rgba(245, 158, 11, 0.35)';
+                    noShowFill.style.background = '#fbbf24';
+                    idleRiskLabel.textContent = 'Moderate Slot Loss';
+                    idleRiskLabel.style.color = '#fbbf24';
+                    overbookRecDisplay.textContent = 'Standby Buffer';
+                    overbookRecDisplay.style.color = '#fbbf24';
+                    noShowDirective.textContent = 'STANDBY RECOMMENDED: Dispatch automated 48-hour SMS confirmation and place 1 rapid-recall patient on phone standby.';
+                } else {
+                    noShowBadge.textContent = 'LOW NO-SHOW RISK';
+                    noShowBadge.style.background = 'rgba(52, 211, 153, 0.18)';
+                    noShowBadge.style.color = '#34d399';
+                    noShowBadge.style.borderColor = 'rgba(52, 211, 153, 0.35)';
+                    noShowFill.style.background = '#34d399';
+                    idleRiskLabel.textContent = 'High Attendance Confidence';
+                    idleRiskLabel.style.color = '#34d399';
+                    overbookRecDisplay.textContent = 'Single Booking';
+                    overbookRecDisplay.style.color = '#34d399';
+                    noShowDirective.textContent = 'CONFIRMED APPOINTMENT: High attendance probability. Single booking maintained; standard routine reminder sequence.';
+                }
+            }
+
+            // Bind Event Listeners
+            nsModality.addEventListener('change', calculateNoShow);
+            nsLeadTime.addEventListener('input', calculateNoShow);
+            nsPrior.addEventListener('input', calculateNoShow);
+            nsSlot.addEventListener('change', calculateNoShow);
+            modWeather.addEventListener('change', calculateNoShow);
+            modTransit.addEventListener('change', calculateNoShow);
+
+            // Initial calculation on load
+            calculateNoShow();
+        })();
+    </script>
     <!-- 8. Interactive ML Peak-Demand Predictor -->
     <section id="ml-predictor" class="section section-alt" style="padding: 48px 24px; min-height: auto;">
         <div style="width: 100%; max-width: 1100px; margin: 0 auto; background: #0f172a; border: 1px solid #1e293b; border-radius: 20px; padding: 32px; color: #f8fafc; box-shadow: 0 16px 36px rgba(0, 0, 0, 0.25);">
